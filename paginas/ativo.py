@@ -8,7 +8,7 @@ from pwass.ui.theme import badge, card, num, pct
 
 theme.header("Raio-X do ativo", "Tudo sobre uma ação ou ETF em uma tela — e uma segunda opinião da IA.")
 
-default = st.session_state.get("ticker", "MSFT")
+default = st.session_state.get("ticker") or st.query_params.get("t") or "MSFT"
 ticker = st.text_input("Ticker (Yahoo Finance)", value=default,
                        help="Ações e ETFs americanos (MSFT), ADRs (ASML) ou UCITS em Londres (CSPX.L).").strip().upper()
 if not ticker:

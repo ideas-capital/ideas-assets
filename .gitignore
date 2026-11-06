@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.streamlit/secrets.toml
+*.local.yaml
+*.local.json
+vault/
+exports/
+data/*.local.json

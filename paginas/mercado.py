@@ -115,7 +115,7 @@ for i, (sid, (name, unit, how)) in enumerate(SERIES.items()):
     last, year_ago = s.iloc[-1], s[s.index <= s.index[-1] - pd.DateOffset(years=1)]
     delta = last - year_ago.iloc[-1] if len(year_ago) else None
     cap = f"{s.index[-1]:%m/%Y} · 12m: {num(delta, 2, '+' if delta and delta > 0 else '')} {unit}"
-    cols[i % 3].markdown(card(name, f"{num(last, 2)} {unit}", cap) + f'<div class="c" style="font-size:.78rem;color:#64748B;margin:-.3rem 0 .8rem 0">{how}</div>',
+    cols[i % 3].markdown(card(name, f"{num(last, 2)} {unit}", cap) + f'<div class="c" style="font-size:.78rem;color:var(--muted);margin:-.3rem 0 .8rem 0">{how}</div>',
                          unsafe_allow_html=True)
     macro_txt.append(f"{name}: {last:.2f} {unit} ({s.index[-1]:%Y-%m}); variação 12m {delta}")
 

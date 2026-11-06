@@ -12,7 +12,7 @@ import math
 import pandas as pd
 
 from pwass.engine import indicators
-from pwass.ui import theme
+from pwass.ui import theme, tokens
 
 try:
     from lightweight_charts_v5 import lightweight_charts_v5_component as _lwc
@@ -69,8 +69,8 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
     candles = [{"time": _t(i), "open": float(r.Open), "high": float(r.High), "low": float(r.Low),
                 "close": float(r.Close)} for i, r in view.iterrows()]
     price_series = [{"type": "Candlestick", "data": candles,
-                     "options": {"upColor": t["up"], "downColor": t["down"], "borderVisible": False,
-                                 "wickUpColor": t["up"], "wickDownColor": t["down"]}}]
+                     "options": {"upColor": tokens.SERIES["candle_up"], "downColor": tokens.SERIES["candle_down"], "borderVisible": False,
+                                 "wickUpColor": tokens.SERIES["candle_up"], "wickDownColor": tokens.SERIES["candle_down"]}}]
     if trades is not None and not trades.empty and tf == "1D":
         mk = []
         start = idx[0]
@@ -80,12 +80,12 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
                        "text": f"{r['Retorno'] * 100:+.1f}%"})
         price_series[0]["markers"] = sorted(mk, key=lambda m: m["time"])
     if show["mm"]:
-        for n, col in ((20, t["accent2"]), (50, "#F59E0B"), (200, "#E040FB" if theme.mode() == "dark" else "#9C27B0")):
+        for n, col in ((20, tokens.SERIES["mm20"]), (50, tokens.SERIES["mm50"]), (200, tokens.SERIES["mm200"])):
             price_series.append(_lineseries(_line(indicators.sma(c, n).loc[idx]), col, 1, 0, f"MM{n}"))
     if show["bb"]:
         bb = indicators.bollinger(c).loc[idx]
         for col in ("upper", "lower"):
-            price_series.append(_lineseries(_line(bb[col]), "rgba(41,98,255,.55)", 1, 2))
+            price_series.append(_lineseries(_line(bb[col]), tokens.SERIES["bollinger"], 1, 2))
     if show["hl20"]:
         hh = d["High"].rolling(20).max().iloc[-1]
         ll = d["Low"].rolling(20).min().iloc[-1]
@@ -118,7 +118,7 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
     if show["rsi"]:
         r = indicators.rsi(c).loc[idx]
         panes.append({"chart": chart_opts, "height": 110, "title": "RSI 14",
-                      "series": [_lineseries(_line(r), "#7E57C2", 1, 0, "RSI", True),
+                      "series": [_lineseries(_line(r), tokens.SERIES["rsi"], 1, 0, "RSI", True),
                                  _lineseries(_hline(idx, 70, len(idx)), t["muted"], 1, 2),
                                  _lineseries(_hline(idx, 30, len(idx)), t["muted"], 1, 2)]})
     total = sum(p["height"] for p in panes)

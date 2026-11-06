@@ -35,7 +35,7 @@ with tab_models:
                           format_func=lambda k: models[k]["nome"], key="estrategia_ativa",
                           help="Para fixar como padrão, altere 'padrao' em config/estrategias.yaml.")
     d = models[active]
-    theme.note(f"<b>{d['nome']}</b> — {d['resumo']}<br><span style='color:#64748B'>Fonte: {d['fonte']}</span>")
+    theme.note(f"<b>{d['nome']}</b> — {d['resumo']}<br><span style='color:var(--muted)'>Fonte: {d['fonte']}</span>")
 
     c1, c2 = st.columns([1, 2])
     core = c1.slider("Núcleo (% do patrimônio)", 70, 95, 85, 5,

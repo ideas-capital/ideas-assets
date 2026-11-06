@@ -6,16 +6,17 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from pwass.engine import indicators
-from pwass.ui import theme
+from pwass.ui import theme, tokens
 
-COLORS = ["#2563EB", "#F59E0B", "#10B981", "#EF4444", "#8B5CF6", "#0EA5E9", "#64748B", "#EC4899"]
+S = tokens.SERIES
+COLORS = [S["mm20"], S["mm50"], S["candle_up"], S["candle_down"], S["mm200"], "#0EA5E9", "#64748B", "#EC4899"]
 
 
 def layout() -> dict:
     """Layout Plotly que acompanha o tema claro/escuro do app."""
     t = theme.tokens()
     return dict(template="plotly_dark" if theme.mode() == "dark" else "plotly_white",
-                paper_bgcolor=t["panel"], plot_bgcolor=t["panel"], font=dict(family="sans-serif", size=12, color=t["text"]),
+                paper_bgcolor=t["surface"], plot_bgcolor=t["surface"], font=dict(family=tokens.FONT_FAMILY, size=12, color=t["text"]),
                 margin=dict(l=10, r=10, t=30, b=10), legend=dict(orientation="h", y=1.08, x=0), hovermode="x unified",
                 xaxis=dict(gridcolor=t["grid"]), yaxis=dict(gridcolor=t["grid"]))
 
@@ -28,16 +29,16 @@ def price_chart(close: pd.Series, name: str, zone: tuple | None = None, days: in
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[0.75, 0.25], vertical_spacing=0.04)
     fig.add_scatter(x=c.index, y=bb["upper"], line=dict(width=0), showlegend=False, hoverinfo="skip", row=1, col=1)
     fig.add_scatter(x=c.index, y=bb["lower"], line=dict(width=0), fill="tonexty",
-                    fillcolor="rgba(37,99,235,.07)", name="Bandas de Bollinger", hoverinfo="skip", row=1, col=1)
+                    fillcolor="rgba(148,163,184,.12)", name="Bandas de Bollinger", hoverinfo="skip", row=1, col=1)
     fig.add_scatter(x=c.index, y=c, name=name, line=dict(color=COLORS[0], width=2), row=1, col=1)
     fig.add_scatter(x=c.index, y=indicators.sma(close, 50).loc[c.index], name="MM50",
-                    line=dict(color=COLORS[1], width=1.3), row=1, col=1)
+                    line=dict(color=S["mm50"], width=1.3), row=1, col=1)
     fig.add_scatter(x=c.index, y=indicators.sma(close, 200).loc[c.index], name="MM200",
-                    line=dict(color=COLORS[3], width=1.3), row=1, col=1)
+                    line=dict(color=S["mm200"], width=1.3), row=1, col=1)
     if zone and all(zone):
         fig.add_hrect(y0=min(zone), y1=max(zone), fillcolor="#10B981", opacity=0.12, line_width=0,
                       annotation_text="zona-alvo", row=1, col=1)
-    fig.add_scatter(x=c.index, y=rsi, name="RSI 14", line=dict(color=COLORS[4], width=1.2), row=2, col=1)
+    fig.add_scatter(x=c.index, y=rsi, name="RSI 14", line=dict(color=S["rsi"], width=1.2), row=2, col=1)
     for lvl in (30, 70):
         fig.add_hline(y=lvl, line=dict(color="#94A3B8", dash="dot", width=1), row=2, col=1)
     fig.update_layout(height=520, **layout())

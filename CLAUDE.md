@@ -43,5 +43,6 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
 5. Fundamentos oficiais via edgartools (XBRL da SEC).
 
 ## Redesign v5 (em andamento)
+Design System: `docs/redesign/DESIGN-SYSTEM.md`; tokens em `pwass/ui/tokens.py` (fonte única de cores; `.streamlit/config.toml` espelha). Componentes novos em `pwass/ui/components.py`.
 Instruções completas em `docs/redesign/PROMPT-REDESIGN-v5.md`; progresso em `docs/redesign/PROGRESSO.md`.
 Trabalhar na branch `redesign-v5` e retomar sempre pela próxima ação registrada no PROGRESSO.

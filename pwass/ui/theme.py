@@ -12,62 +12,50 @@ import math
 
 import streamlit as st
 
-TOKENS = {
-    "dark": {"bg": "#0B0E14", "panel": "#121620", "panel2": "#171C28", "border": "#232A38",
-             "text": "#D1D4DC", "muted": "#8A93A6", "up": "#26A69A", "down": "#EF5350",
-             "accent": "#2962FF", "accent2": "#22D3EE", "warn": "#F0B90B", "grid": "#1A2030"},
-    "light": {"bg": "#F5F6F9", "panel": "#FFFFFF", "panel2": "#F0F2F7", "border": "#E0E3EB",
-              "text": "#131722", "muted": "#6A7187", "up": "#089981", "down": "#F23645",
-              "accent": "#2962FF", "accent2": "#0891B2", "warn": "#B7791F", "grid": "#EEF0F4"},
-}
+from pwass.ui import tokens as _tk
+
+TOKENS = {m: _tk.theme_tokens(m) for m in _tk.THEMES}
 
 
 def mode() -> str:
-    """Tema atual: o da sessão ou, na primeira carga, o que o servidor já está usando."""
-    if "tema" not in st.session_state:
-        try:
-            st.session_state["tema"] = "light" if st._config.get_option("theme.base") == "light" else "dark"
-        except Exception:  # noqa: BLE001
-            st.session_state["tema"] = "dark"
-    return st.session_state["tema"]
+    """Tema ativo ("dark"/"light"), lido do navegador via `st.context.theme.type`.
+
+    O usuário troca pelo menu nativo do app (⋮ → Settings → Theme). Fora do navegador
+    (AppTest, scripts) cai no padrão do projeto: dark. `?tema=light|dark` na URL força um modo
+    (útil para screenshots e testes).
+    """
+    forced = st.query_params.get("tema")
+    if forced in TOKENS:
+        return forced
+    try:
+        t = st.context.theme.type
+    except Exception:  # noqa: BLE001 — sem contexto de navegador
+        t = None
+    return t if t in TOKENS else "dark"
 
 
 def tokens() -> dict:
+    """Tokens do tema ativo (com apelidos v4: panel, muted, accent...)."""
     return TOKENS[mode()]
-
-
-def apply_theme() -> None:
-    """Aplica o tema nativo do Streamlit para o modo atual."""
-    t = tokens()
-    opts = {"base": mode(), "backgroundColor": t["bg"], "secondaryBackgroundColor": t["panel2"],
-            "textColor": t["text"], "primaryColor": t["accent"]}
-    for k, v in opts.items():
-        try:
-            if st._config.get_option(f"theme.{k}") != v:
-                st._config.set_option(f"theme.{k}", v)
-        except Exception:  # noqa: BLE001 — opção inexistente nesta versão
-            pass
-
-
-def set_mode(new: str) -> None:
-    st.session_state["tema"] = new
-    apply_theme()
 
 
 def inject() -> None:
     t = tokens()
     st.markdown(f"""
 <style>
-:root {{--bg:{t['bg']};--panel:{t['panel']};--panel2:{t['panel2']};--border:{t['border']};--text:{t['text']};
---muted:{t['muted']};--up:{t['up']};--down:{t['down']};--accent:{t['accent']};--accent2:{t['accent2']};--warn:{t['warn']};}}
+:root {{--bg:{t['bg']};--bg2:{t['bg2']};--surface:{t['surface']};--raised:{t['surface_raised']};--border:{t['border']};
+--text:{t['text']};--text-muted:{t['text_muted']};--primary:{t['primary']};--primary-text:{t['primary_text']};
+--up:{t['up']};--down:{t['down']};--warn:{t['warn']};--indicator:{t['indicator']};--grid:{t['grid']};
+--panel:{t['surface']};--panel2:{t['surface_raised']};--muted:{t['text_muted']};--accent:{t['primary_text']};--accent2:{t['primary_text']};
+--shadow:{'0 1px 2px rgba(15,23,42,.06)' if mode() == 'light' else 'none'};--font:{_tk.FONT_FAMILY};}}
 .stApp {{background:var(--bg);}}
-[data-testid="stSidebar"] {{background:var(--panel);border-right:1px solid var(--border);}}
+[data-testid="stSidebar"] {{background:var(--bg2);border-right:1px solid var(--border);}}
 [data-testid="stHeader"] {{background:transparent;}}
 .block-container {{padding-top:1.1rem;padding-bottom:2.5rem;max-width:1500px;}}
 h1,h2,h3,h4 {{letter-spacing:-.01em;}}
-.pw-head h1 {{font-size:1.6rem;margin:0 0 .1rem 0;}}
+.pw-head h1 {{font-size:24px;margin:0 0 .1rem 0;}}
 .pw-head p {{color:var(--muted);margin:0 0 1rem 0;font-size:.95rem;}}
-.pw-card {{border:1px solid var(--border);border-radius:10px;padding:11px 13px;background:var(--panel);height:100%;margin-bottom:.6rem;}}
+.pw-card {{box-shadow:var(--shadow);border:1px solid var(--border);border-radius:10px;padding:11px 13px;background:var(--panel);height:100%;margin-bottom:.6rem;}}
 .pw-card .t {{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}}
 .pw-card .v {{font-size:1.3rem;font-weight:650;margin:.1rem 0 .15rem 0;color:var(--text);}}
 .pw-card .c {{font-size:.8rem;color:var(--muted);}}
@@ -79,7 +67,7 @@ h1,h2,h3,h4 {{letter-spacing:-.01em;}}
 .pw-warn {{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn);}}
 .pw-info {{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);}}
 .pw-mute {{background:color-mix(in srgb,var(--muted) 16%,transparent);color:var(--muted);}}
-.pw-solid-ok {{background:var(--up);color:#fff;}} .pw-solid-bad {{background:var(--down);color:#fff;}}
+.pw-solid-ok {{background:var(--up);color:var(--bg);}} .pw-solid-bad {{background:var(--down);color:var(--bg);}}
 .pw-note {{border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent);
           padding:9px 13px;border-radius:6px;margin:.4rem 0 1rem 0;font-size:.9rem;}}
 .pw-note.warn {{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);}}
@@ -88,7 +76,7 @@ h1,h2,h3,h4 {{letter-spacing:-.01em;}}
 .pw-foot {{color:var(--muted);font-size:.75rem;margin-top:2rem;border-top:1px solid var(--border);padding-top:.7rem;}}
 /* ---------- Terminal ---------- */
 .ic-brand {{line-height:1;margin:.2rem 0 1.1rem 0;}}
-.ic-brand .logo {{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+.ic-brand .logo {{width:34px;height:34px;border-radius:8px;background:var(--primary);
   display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem;margin-right:.55rem;vertical-align:middle;}}
 .ic-brand .name {{font-weight:800;font-size:1.32rem;letter-spacing:.02em;color:var(--text);vertical-align:middle;}}
 .ic-brand .sub {{display:block;color:var(--accent2);font-size:1.05rem;font-weight:500;margin:.05rem 0 0 2.6rem;}}
@@ -117,7 +105,44 @@ h1,h2,h3,h4 {{letter-spacing:-.01em;}}
 .ic-table tr:hover td {{background:color-mix(in srgb,var(--accent) 5%,transparent);}}
 .ic-scroll {{max-height:560px;overflow:auto;border:1px solid var(--border);border-radius:10px;background:var(--panel);}}
 .ic-alert {{padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;}}
-div[data-testid="stPopover"] button {{border-radius:8px;}}
+div[data-testid="stPopover"] button {{border-radius:6px;}}
+/* ---------- Design System v5 (components.py) ---------- */
+.ds-hdr {{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:0 0 16px 0;}}
+.ds-hdr h1 {{font-size:24px;margin:0;font-weight:700;padding:0;}}
+.ds-hdr .sub {{color:var(--text-muted);font-size:14px;margin-top:2px;}}
+.ds-src {{color:var(--text-muted);font-size:12px;}}
+.ds-top {{display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:var(--text-muted);font-size:12px;margin-bottom:8px;}}
+.ds-kpi {{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;box-shadow:var(--shadow);height:100%;}}
+.ds-kpi .l {{font-size:12px;color:var(--text-muted);}}
+.ds-kpi .v {{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;}}
+.ds-kpi .d {{font-size:14px;font-variant-numeric:tabular-nums;}}
+.ds-kpi svg {{width:100%;height:28px;display:block;margin-top:4px;}}
+.ds-strip {{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:0 0 16px 0;}}
+.ds-strip .it {{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;}}
+.ds-strip .n {{font-weight:600;font-size:12px;color:var(--text-muted);}}
+.ds-strip .p {{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;}}
+.ds-strip svg {{width:100%;height:26px;display:block;margin-top:2px;}}
+.ds-asset {{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;margin-bottom:12px;}}
+.ds-asset .tk {{font-size:24px;font-weight:700;}} .ds-asset .nm {{font-size:14px;color:var(--text-muted);}}
+.ds-asset .px {{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}}
+.ds-tag {{border:1px solid var(--border);border-radius:6px;padding:1px 8px;font-size:12px;color:var(--text-muted);}}
+.ds-insight {{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:14px;}}
+.ds-insight .k {{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:8px;}}
+.ds-insight .k:first-child {{margin-top:0;}}
+.ds-empty {{border:1px dashed var(--border);border-radius:10px;padding:24px;text-align:center;color:var(--text-muted);font-size:14px;margin:8px 0;}}
+.ds-empty b {{display:block;color:var(--text);margin-bottom:4px;}}
+.ds-empty.err {{border-color:var(--down);}} .ds-empty.err b {{color:var(--down);}}
+.ds-skel {{height:64px;border-radius:10px;background:var(--raised);}}
+.ds-chip {{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:12px;color:var(--text-muted);margin:0 6px 6px 0;}}
+.ds-obs {{color:var(--text);}} .ds-calc {{color:var(--primary-text);}} .ds-sim {{color:var(--warn);}} .ds-ia {{color:var(--indicator);}}
+.pw-badge {{font-size:12px;}}
+.pw-warn {{color:var(--warn);}}
+@media (max-width:767px) {{
+  .block-container {{padding-left:12px;padding-right:12px;}}
+  .ds-kpi .v {{font-size:22px;}} .ds-asset .px {{font-size:22px;}}
+  .ds-hdr h1, .pw-head h1 {{font-size:20px;}}
+}}
+
 </style>""", unsafe_allow_html=True)
 
 
@@ -143,6 +168,11 @@ def num(x, digits: int = 2, prefix: str = "") -> str:
         return "∞"
     s = f"{x:,.{digits}f}".replace(",", "X").replace(".", ",").replace("X", ".")
     return prefix + s
+
+
+def money(x, digits: int = 2, cur: str = "US$") -> str:
+    """Valor monetário com moeda explícita: money(1234.5) → 'US$ 1.234,50'; ausente → '—'."""
+    return "—" if _isnan(x) else f"{cur} {num(x, digits)}"
 
 
 def colored_pct(x, digits: int = 1) -> str:
