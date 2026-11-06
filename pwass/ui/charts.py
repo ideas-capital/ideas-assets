@@ -62,3 +62,60 @@ def lines(df: pd.DataFrame, title: str = "", log: bool = False, pct_axis: bool =
 def normalized(df: pd.DataFrame, title: str = "") -> go.Figure:
     base = df.apply(lambda s: s / s.dropna().iloc[0] - 1)
     return lines(base, title, pct_axis=True)
+
+
+# ------------------------------------------------------------------ gráficos do Laboratório / carteiras
+def _fig(height: int, title: str = "", **kw) -> go.Figure:
+    fig = go.Figure()
+    lay = layout()
+    lay["legend"] = dict(orientation="h", y=-0.2, x=0, font=dict(size=11))
+    lay["margin"] = dict(l=8, r=8, t=34 if title else 10, b=8)
+    fig.update_layout(height=height, title=dict(text=title, font=dict(size=13)) if title else None, **lay, **kw)
+    return fig
+
+
+def _serie_cor(i: int, n: int, t: dict) -> str:
+    """1ª série (a estratégia) = 'up'; com 2 séries, a 2ª (buy & hold) = cinza; com mais, paleta."""
+    return t["up"] if i == 0 else t["muted"] if (i == 1 and n == 2) else COLORS[(i + 1) % len(COLORS)]
+
+
+def equity_vs(curves: dict[str, pd.Series], title: str, height: int = 300, log: bool = True) -> go.Figure:
+    """Curvas de capital (base 1). A primeira usa a cor 'up'; as demais, a paleta de séries."""
+    t = theme.tokens()
+    fig = _fig(height, title)
+    for i, (name, s) in enumerate(curves.items()):
+        fig.add_scatter(x=s.index, y=s.values, name=name, line=dict(color=_serie_cor(i, len(curves), t), width=1.8 if i == 0 else 1.3))
+    if log:
+        fig.update_yaxes(type="log", tickformat=".1f")
+    return fig
+
+
+def drawdown_fig(curves: dict[str, pd.Series], title: str = "Queda a partir do topo", height: int = 200) -> go.Figure:
+    t = theme.tokens()
+    fig = _fig(height, title)
+    for i, (name, s) in enumerate(curves.items()):
+        dd = s / s.cummax() - 1
+        fig.add_scatter(x=dd.index, y=dd.values, name=name, line=dict(color=_serie_cor(i, len(curves), t), width=1.2),
+                        fill="tozeroy" if i == 0 else None, fillcolor="rgba(148,163,184,.14)")
+    fig.update_yaxes(tickformat=".0%")
+    return fig
+
+
+def histogram(returns: pd.Series, title: str = "Resultado por operação", height: int = 220) -> go.Figure:
+    t = theme.tokens()
+    fig = _fig(height, title)
+    r = returns.dropna()
+    fig.add_histogram(x=r[r > 0], name="Ganhos", marker_color=t["up"], xbins=dict(size=0.02))
+    fig.add_histogram(x=r[r <= 0], name="Perdas", marker_color=t["down"], xbins=dict(size=0.02))
+    fig.update_layout(barmode="overlay", bargap=0.05)
+    fig.update_xaxes(tickformat=".0%")
+    return fig
+
+
+def bars_by_year(series: dict[str, pd.Series], title: str = "Retorno por ano", height: int = 240) -> go.Figure:
+    fig = _fig(height, title)
+    for i, (name, s) in enumerate(series.items()):
+        fig.add_bar(x=s.index.astype(str), y=s.values, name=name, marker_color=COLORS[i % len(COLORS)] if i else theme.tokens()["up"])
+    fig.update_layout(barmode="group")
+    fig.update_yaxes(tickformat=".0%")
+    return fig

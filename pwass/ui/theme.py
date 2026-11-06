@@ -21,8 +21,8 @@ def mode() -> str:
     """Tema ativo ("dark"/"light"), lido do navegador via `st.context.theme.type`.
 
     O usuário troca pelo menu nativo do app (⋮ → Settings → Theme). Fora do navegador
-    (AppTest, scripts) cai no padrão do projeto: dark. `?tema=light|dark` na URL força um modo
-    (útil para screenshots e testes).
+    (AppTest, scripts) cai no padrão do projeto: dark. `?tema=light|dark` na URL força só o CSS PRÓPRIO
+    (não muda o tema nativo do Streamlit): serve para AppTest; em navegador, teste trocando o tema do navegador/menu.
     """
     forced = st.query_params.get("tema")
     if forced in TOKENS:

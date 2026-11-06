@@ -28,7 +28,10 @@ MENU = {
         ("paginas/scanner.py", "Scanner", ":material/manage_search:"),
         ("paginas/radar.py", "Zonas de entrada", ":material/my_location:"),
     ],
-    "Estratégias": [("paginas/estrategias.py", "Estratégias e carteiras", ":material/explore:")],
+    "Estratégias": [
+        ("paginas/laboratorio.py", "Laboratório de swing", ":material/science:"),
+        ("paginas/carteiras.py", "Carteiras do Núcleo", ":material/account_balance:"),
+    ],
     "Inteligência": [("paginas/analista.py", "Analista IA", ":material/smart_toy:")],
     "Sistema": [("paginas/guia.py", "Guia e rotina", ":material/menu_book:")],
 }

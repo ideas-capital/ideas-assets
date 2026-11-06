@@ -57,7 +57,7 @@ def fib_levels(df: pd.DataFrame, lookback: int = 120) -> dict[float, float]:
 
 
 def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = None,
-           plan: dict | None = None, trades: pd.DataFrame | None = None, levels: dict | None = None, bars: int = 180,
+           plan: dict | None = None, trades: pd.DataFrame | None = None, levels: dict | None = None, zone: tuple | None = None, bars: int = 180,
            height: int = 560, key: str = "tv") -> None:
     show = {"mm": True, "bb": True, "vol": True, "rsi": True, "fib": False, "hl20": False, "plan": True, "macd": False, "sr": False,
             **(show or {})}
@@ -100,6 +100,9 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
             price_series.append(_lineseries(_hline(idx, v, len(idx)), t["up"], 1, 2, f"Suporte {i + 1}", True))
         for i, v in enumerate(levels.get("resistencias", [])):
             price_series.append(_lineseries(_hline(idx, v, len(idx)), t["down"], 1, 2, f"Resist. {i + 1}", True))
+    if zone:  # faixa-alvo de compra: duas linhas (a biblioteca não desenha retângulos)
+        for lbl, v in (("Zona máx", max(zone)), ("Zona mín", min(zone))):
+            price_series.append(_lineseries(_hline(idx, v, len(idx)), t["accent"], 2, 0, lbl, True))
     if show["plan"] and plan:
         for lbl, key_, col, sty in (("Entrada", "entrada", t["accent"], 0), ("Stop", "stop", t["down"], 2),
                                     ("Alvo 1", "alvo1", t["up"], 2), ("Alvo 2", "alvo2", t["up"], 2)):

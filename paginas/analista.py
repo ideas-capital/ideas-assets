@@ -1,12 +1,16 @@
 """Analista IA: envie relatórios, prints de gráfico, filings da SEC ou teses de terceiros."""
+import datetime as dt
+import math
+
 import streamlit as st
 
-from pwass.ai import documents, openrouter, prompts
-from pwass.ui import cache, context, settings, theme
+from pwass.ai import documents, estruturada as E, openrouter, prompts
+from pwass.engine import ativo as A, swing as S
+from pwass.ui import cache, components as ds, context, settings, theme
 
-theme.header("Analista IA",
-             "Importe um relatório, um print de gráfico ou um filing da SEC. O texto é extraído aqui no app "
-             "(custo zero) e só então vai para o modelo que você escolher.")
+ds.page_header("Analista IA",
+               "Análise estruturada de um ativo a partir de números calculados pelo app, e leitura de documentos. "
+               "Toda resposta da IA é interpretação — não dado.")
 
 if not settings.any_ai():
     theme.note("Para usar esta tela, cole uma chave em ⚙️ Configurações: <b>OpenRouter</b> (todos os modelos, "
@@ -23,8 +27,85 @@ def cost_hint(model: str, chars: int) -> None:
                + (f" · custo estimado US$ {est:.3f}" if est is not None else ""))
 
 
-tab_doc, tab_img, tab_sec, tab_claim = st.tabs(
-    ["📄 Relatório / documento", "🖼️ Gráfico (imagem)", "🏛️ Filings da SEC", "🔍 Auditar tese de terceiro"])
+tab_est, tab_doc, tab_img, tab_sec, tab_claim = st.tabs(
+    ["Análise estruturada", "Relatório / documento", "Gráfico (imagem)", "Filings da SEC", "Auditar tese de terceiro"])
+
+
+def _limpa(d):
+    return {k: (None if isinstance(v, float) and (math.isnan(v) or math.isinf(v)) else v) for k, v in d.items()}
+
+
+# ---------------------------------------------------------------- Análise estruturada
+with tab_est:
+    st.markdown(f'{ds.origin_tag("ia")} <span class="ds-src">A IA recebe <b>somente</b> o bloco de números abaixo (calculado pelo app, '
+                "com data de referência) e responde em formato fixo. Níveis de preço, alvos e stops só podem ser os do bloco.</span>",
+                unsafe_allow_html=True)
+    tk_e = st.text_input("Ticker", value=st.session_state.get("ticker", "MSFT"), key="est_tk").strip().upper()
+    q_e = st.text_input("Pergunta específica (opcional)", key="est_q")
+    model_e = settings.model_picker("est_modelo")
+    if tk_e and st.button("Montar dados e analisar", type="primary", key="est_go"):
+        try:
+            with st.spinner("Calculando os dados do ativo..."):
+                b = context.asset_bundle(tk_e)
+                ohl = cache.ohlcv((tk_e,), "10y").get(tk_e)
+        except Exception as e:  # noqa: BLE001
+            ds.error_state(f"Não consegui montar os dados de {tk_e}", str(e), "Confira o ticker.")
+            st.stop()
+        sw = cache.config("swing")
+        risk = sw["risco"]
+        f = b["_fund_raw"]
+        klass = A.classe(f.get("quote_type"), tk_e)
+        estr, plano = {}, None
+        if ohl is not None and len(ohl) >= 260:
+            for k, d in sw["estrategias"].items():
+                bt = S.backtest(ohl, k, d, risk["custo_por_lado"], risk["multiplo_atr_stop"])
+                stt = S.stats(bt, S.periods_per_year(ohl.index))
+                estr[d["nome"]] = {"situacao_hoje": S.status_today(ohl, k, d, bt)[0], "historico": S.quality(stt),
+                                   "backtest_simulado": _limpa(stt)}
+            plano = _limpa(S.plan(ohl, risk))
+        data_ref = f"{b['_close'].dropna().index[-1]:%d/%m/%Y}"
+        fund = context.for_ai(b)
+        payload = E.montar_payload(ticker=tk_e, classe=klass, moeda=f.get("currency") or "?", data_ref=data_ref,
+                                   tecnica=b["tecnica"], estrategias=estr, plano=plano, riscos=risk,
+                                   fundamentos={k: fund[k] for k in ("fundamentos", "piotroski", "dcf")}, retornos=b["retornos"])
+        msgs = [{"role": "system", "content": prompts.SYSTEM + "\n\n" + E.SYSTEM_EXTRA},
+                {"role": "user", "content": f"Analise {tk_e}." + (f" Pergunta: {q_e}" if q_e else "")
+                 + "\n\nDADOS (JSON, referência " + data_ref + "):\n" + E.para_prompt(payload)}]
+        res = settings.ask_ai(msgs, model=model_e, temperature=0.2)
+        if res:
+            st.session_state.setdefault("analises_ia", []).insert(
+                0, {"ticker": tk_e, "quando": dt.datetime.now(ds.BRT).strftime("%d/%m/%Y %H:%M BRT"), "data_ref": data_ref,
+                    "modelo": res.model, "custo": res.cost_usd, "texto": res.text, "payload": payload})
+    hist = st.session_state.get("analises_ia", [])
+    if hist:
+        a_ = hist[0]
+        v = E.validar(a_["texto"], a_["payload"])
+        st.markdown(f"#### {a_['ticker']} · dados de {a_['data_ref']}")
+        if v["faltando"]:
+            ds.error_state("Resposta fora do formato fixo", "Seções ausentes: " + ", ".join(v["faltando"]), "Rode de novo ou troque de modelo.")
+        if v["percentual_de_confianca"]:
+            theme.note("A resposta usa percentual de confiança, que não é calibrado. Ignore esse número.", warn=True)
+        if v["numeros_fora"]:
+            theme.note("Números citados em <b>Dados observados</b> que não estão nos dados enviados: "
+                       + ", ".join(theme.num(n, 2) for n in v["numeros_fora"][:8]) + ". Confira antes de confiar.", warn=True)
+        for nome, corpo in v["secoes"].items():
+            with st.container(border=True):
+                tag = {"Dados observados": "observado", "Decisão": "ia", "Interpretação": "ia", "Hipóteses": "ia",
+                       "Riscos e limitações": "ia"}[nome]
+                st.markdown(f"**{nome}** {ds.origin_tag(tag)}", unsafe_allow_html=True)
+                st.markdown(corpo)
+        custo = f" · custo US$ {a_['custo']:.4f}" if a_["custo"] is not None else ""
+        st.markdown(ds.source_note(f"IA ({a_['modelo']}){custo}", f"gerada em {a_['quando']}", f"dados de {a_['data_ref']}"),
+                    unsafe_allow_html=True)
+        st.download_button("Baixar análise (.md)", a_["texto"], file_name=f"analise-{a_['ticker']}.md", mime="text/markdown", key="est_dl")
+        with st.expander("Dados enviados à IA (JSON)"):
+            st.json(a_["payload"], expanded=False)
+        if len(hist) > 1:
+            with st.expander(f"Análises anteriores desta sessão ({len(hist) - 1})"):
+                for h in hist[1:]:
+                    st.markdown(f"**{h['ticker']}** · {h['quando']} · {h['modelo']}")
+                    st.markdown(h["texto"])
+        st.caption("As análises ficam só nesta sessão do navegador; o armazenamento persistente chega com o módulo de dados (Sessão 4).")
 
 # ---------------------------------------------------------------- Documento
 with tab_doc:

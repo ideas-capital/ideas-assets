@@ -1,17 +1,16 @@
-"""Estratégias do Núcleo: carteiras-modelo trocáveis, sinais mensais e backtest em USD ou BRL."""
+"""Carteiras do Núcleo: carteiras-modelo trocáveis, sinais mensais, comparação lado a lado e backtest em USD ou BRL."""
 import tempfile
 
 import pandas as pd
 import streamlit as st
 
 from pwass.data import brasil
-from pwass.engine import backtest, strategies as S
-from pwass.ui import cache, charts, theme
+from pwass.engine import backtest, carteiras as C, strategies as S
+from pwass.ui import cache, charts, components as ds, theme
 from pwass.ui.theme import badge
 
-theme.header("Estratégias e carteiras",
-             "Carteiras-modelo publicadas, com regras fixas. Escolha a sua, compare com as outras "
-             "e veja o resultado em dólar ou em reais contra o CDI.")
+ds.page_header("Carteiras do Núcleo", "Carteiras-modelo publicadas, com regras fixas. Escolha a sua, compare com as outras "
+               "e veja o resultado em dólar ou em reais contra o CDI.", source="Yahoo Finance (ETFs ajustados), BCB (CDI)")
 
 cfg = cache.config("estrategias")
 models = {k: {**v, "id": k} for k, v in cfg["carteiras"].items()}
@@ -24,8 +23,9 @@ m = S.completed_months(m_all)               # só meses fechados = sinal oficial
 partial = len(m_all) > len(m)
 next_month = (m.index[-1] + pd.offsets.MonthEnd(1)).strftime("%m/%Y")
 
-tab_models, tab_gem, tab_gtaa, tab_exec = st.tabs(
-    ["Carteiras-modelo", "Dual Momentum (GEM)", "GTAA · Ivy 5 (Faber)", "Como executar (UCITS)"])
+tab_models, tab_side, tab_gem, tab_gtaa, tab_exec = st.tabs(
+    ["Carteiras-modelo", "Lado a lado", "Dual Momentum (GEM)", "GTAA · Ivy 5 (Faber)", "Como executar (UCITS)"])
+fx_m = S.monthly(fx.to_frame())["BRL=X"]
 
 # ------------------------------------------------------------------ Carteiras-modelo
 with tab_models:
@@ -55,31 +55,24 @@ with tab_models:
                          format_func=lambda k: models[k]["nome"])
     in_brl = b.toggle("Em reais (vs CDI)", value=True,
                       help="Converte pelo dólar do mês e compara com o CDI. É o que importa para quem vive no Brasil.")
-    results = {models[k]["nome"]: backtest.run(S.model_weights(models[k], m), m) for k in pick}
+    results = C.retornos({k: models[k] for k in pick}, m)
     if results:
-        first = max(r.index[0] for r in results.values())
+        first = C.inicio_comum(results)
         years = list(range(first.year, m.index[-1].year))
         start_year = c.selectbox("Desde", years, index=0)
         start = max(first, pd.Timestamp(f"{start_year}-01-31"))
-        fx_m = S.monthly(fx.to_frame())["BRL=X"]
         rf = m["BIL"].pct_change()
         if in_brl:
-            results = {k: backtest.to_brl(v, fx_m) for k, v in results.items()}
+            cdi = None
             try:
                 cdi = backtest.cdi_monthly(cache.sgs(brasil.SGS["cdi_mes"], start="01/01/2007"))
-                results["CDI (renda fixa BR)"] = cdi
                 rf = cdi
             except Exception as e:  # noqa: BLE001
                 st.caption(f"CDI indisponível agora: {e}")
-        end = min(r.index[-1] for r in results.values())
-        results = {k: v[(v.index >= start) & (v.index <= end)] for k, v in results.items()}
+            results = C.converter_brl(results, fx_m, cdi)
+        results, end = C.recortar(results, start)
         met = pd.DataFrame({k: backtest.metrics(v, rf) for k, v in results.items()})
-        pct_rows = ["Retorno a.a. (CAGR)", "Volatilidade a.a.", "Pior queda (máx. drawdown)", "Pior ano", "Melhor ano"]
-        fmt = met.copy().astype(object)
-        for row in met.index:
-            sign = "" if row == "Volatilidade a.a." else "+"
-            fmt.loc[row] = [(f"{v * 100:{sign}.1f}%" if row in pct_rows else f"{v:.2f}" if row == "Sharpe"
-                             else f"{v:.0f}").replace(".", ",") for v in met.loc[row]]
+        fmt = C.formatar_metricas(met)
         st.dataframe(fmt, width="stretch")
         ccy = "R$" if in_brl else "US$"
         theme.note(f"Resultados em <b>{'reais' if in_brl else 'dólares'}</b>, de {start:%m/%Y} a {end:%m/%Y}, com "
@@ -108,6 +101,46 @@ with tab_models:
                                        mime="text/html")
                 except Exception as e:  # noqa: BLE001
                     st.error(f"QuantStats falhou: {e}")
+
+# ------------------------------------------------------------------ Lado a lado
+with tab_side:
+    pick2 = st.multiselect("Escolha 2 ou 3 carteiras", keys, default=["nucleo_conservador", "global_60_40", "gem"][:3],
+                           max_selections=3, format_func=lambda k: models[k]["nome"], key="side_pick")
+    brl2 = st.toggle("Em reais (vs CDI)", value=True, key="side_brl")
+    if len(pick2) < 2:
+        ds.empty_state("Escolha pelo menos 2 carteiras", "A comparação lado a lado precisa de 2 ou 3.")
+    else:
+        res2 = C.retornos({k: models[k] for k in pick2}, m)
+        rf2 = m["BIL"].pct_change()
+        if brl2:
+            cdi2 = None
+            try:
+                cdi2 = backtest.cdi_monthly(cache.sgs(brasil.SGS["cdi_mes"], start="01/01/2007"))
+                rf2 = cdi2
+            except Exception as e:  # noqa: BLE001
+                st.caption(f"CDI indisponível agora: {e}")
+            res2 = C.converter_brl(res2, fx_m, cdi2)
+        res2, end2 = C.recortar(res2, C.inicio_comum(res2))
+        st.caption(f"Mesmo período para todas: {C.inicio_comum(res2):%m/%Y} a {end2:%m/%Y}, em {'reais' if brl2 else 'dólares'}.")
+        cols = st.columns(len(pick2))
+        for col, k in zip(cols, pick2):
+            d = models[k]
+            nm = d["nome"]
+            with col, st.container(border=True):
+                st.markdown(f"**{nm}**")
+                st.caption(d["resumo"])
+                al = S.current_allocation({**d, "id": k}, m)
+                al = al.assign(Ativo=[S.NAMES.get(t, t) for t in al.index]).reset_index(names="ETF")
+                ds.data_table(al[["ETF", "Ativo", "Peso"]], key=f"side_al_{k}",
+                              column_config={"Peso": st.column_config.ProgressColumn("Peso", min_value=0, max_value=1, format="percent")})
+                mt = backtest.metrics(res2[nm], rf2)
+                ds.kpi_row([ds.kpi("Retorno a.a.", theme.pct(mt["Retorno a.a. (CAGR)"]), source="backtest (simulado)")])
+                ds.kpi_row([ds.kpi("Pior queda", theme.pct(mt["Pior queda (máx. drawdown)"], 0), source="backtest (simulado)")])
+                ds.kpi_row([ds.kpi("Sharpe", theme.num(mt["Sharpe"], 2), source="vs CDI" if brl2 else "vs T-Bills")])
+        with ds.chart_container("Crescimento de 100 (escala log)", "Yahoo Finance, BCB · backtest mensal simulado", f"até {end2:%m/%Y}",
+                                legend="Dividendos reinvestidos, rebalanceamento mensal; sem custos, spread cambial, IOF ou impostos."):
+            st.plotly_chart(charts.lines(pd.DataFrame({k: backtest.equity(v) for k, v in res2.items()}), "", log=True),
+                            width="stretch", key="side_eq")
 
 # ------------------------------------------------------------------ GEM
 with tab_gem:
