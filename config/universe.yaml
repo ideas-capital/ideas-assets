@@ -1,0 +1,28 @@
+# Universo do Scanner QVM. Só mercado externo — nenhuma empresa brasileira
+# ou com receita majoritariamente no Brasil (por isso NU, MELI, VALE, PBR,
+# ITUB, XP, STNE etc. ficam de fora). Edite à vontade: 1 ticker por item.
+#
+# Critério da lista inicial: grandes empresas líquidas (S&P 100 + líderes
+# globais negociados nos EUA via ADR). Universo grande demais deixa o
+# scanner lento (o Yahoo limita requisições).
+
+pesos:            # Peso de cada fator na nota final (soma = 1)
+  quality: 0.4
+  value: 0.3
+  momentum: 0.3
+
+grupos:
+  EUA — Tecnologia:
+    [AAPL, MSFT, NVDA, GOOGL, META, AVGO, ORCL, CRM, ADBE, AMD, CSCO, ACN, TXN,
+     QCOM, INTU, AMAT, NOW, MU, KLAC, LRCX, ANET, PANW, CRWD, PLTR, IBM]
+  EUA — Consumo e varejo:
+    [AMZN, TSLA, HD, COST, WMT, MCD, PG, KO, PEP, NKE, LOW, BKNG, SBUX, NFLX, UBER, DIS]
+  EUA — Saúde:
+    [LLY, UNH, JNJ, ABBV, MRK, TMO, ABT, DHR, ISRG, VRTX, REGN, AMGN, PFE]
+  EUA — Financeiro:
+    [BRK-B, JPM, V, MA, BAC, GS, MS, SPGI, BLK, AXP, SCHW]
+  EUA — Indústria, energia e outros:
+    [XOM, CVX, LIN, CAT, GE, HON, UNP, DE, LMT, RTX, NEE, ADP]
+  Internacional (ADRs):
+    [TSM, ASML, NVO, SAP, AZN, SHEL, TTE, TM, SONY, UL, NVS, HSBC, RY,
+     BHP, RIO, ARM, SHOP, SNY, DEO, BTI]

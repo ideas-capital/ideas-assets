@@ -1,0 +1,93 @@
+# Laboratório de Swing Trade — regras, universo e gestão de risco.
+#
+# Todas as estratégias usam candles DIÁRIOS e executam na ABERTURA do dia
+# seguinte ao sinal (sem olhar o futuro). Dados intradiários grátis (1h/15m)
+# têm histórico curto demais para backtest confiável, por isso não são usados.
+
+risco:
+  capital_laboratorio_usd: 5000   # dinheiro separado para swing (sugestão: até 5% do patrimônio)
+  risco_por_operacao: 0.01        # perda máxima por operação = 1% do capital do laboratório
+  posicao_maxima: 0.25            # nenhuma posição passa de 25% do laboratório
+  custo_por_lado: 0.001           # 0,10% por compra e por venda (corretagem + spread)
+  multiplo_atr_stop: 2.0          # stop = entrada − 2 × ATR(14)
+  alvos_em_r: [1.5, 3.0]          # alvo 1 = 1,5R, alvo 2 = 3R (R = distância até o stop)
+
+estrategias:
+  pullback:
+    nome: "Swing Trade — Pullback"
+    curto: "Swing Trade"
+    descricao: >-
+      Compra quedas curtas dentro de tendência de alta. Regra canônica de Larry Connors:
+      preço acima da MM200 e RSI de 2 períodos abaixo de 10 → compra na abertura seguinte;
+      sai quando o fechamento passa da MM5. Muitos acertos pequenos; perdas raras, mas maiores.
+    fonte: "Connors & Alvarez, Short Term Trading Strategies That Work (2009)"
+    rsi_periodo: 2
+    rsi_entrada: 10
+    rsi_perto: 25
+    mm_tendencia: 200
+    mm_saida: 5
+  cruzamento:
+    nome: "Cruzamento de Médias"
+    curto: "Cruzamento Média"
+    descricao: >-
+      Segue tendências de médio prazo: compra quando a média exponencial de 20 dias cruza
+      para cima a de 50, com o preço acima da MM200; sai no cruzamento para baixo.
+      Poucos acertos, ganhos maiores, operações longas.
+    fonte: "Clássico de seguimento de tendência (médias móveis)"
+    rapida: 20
+    lenta: 50
+    mm_tendencia: 200
+  rompimento:
+    nome: "Rompimento com Volume"
+    curto: "Rompimento"
+    descricao: >-
+      Compra quando o preço fecha acima da máxima dos últimos 55 dias com volume 50% acima
+      da média de 20 dias. Stop inicial em 2 × ATR; sai quando fecha abaixo da mínima de
+      20 dias. Muitas perdas pequenas e poucos ganhos grandes.
+    fonte: "Regras das Tartarugas (Richard Dennis), canal de Donchian"
+    canal_entrada: 55
+    canal_saida: 20
+    volume_minimo: 1.5
+
+padrao: pullback
+
+# Universo do radar de sinais (dados diários do Yahoo Finance).
+universo:
+  ETFs:
+    SPY: S&P 500
+    QQQ: Nasdaq 100
+    IWM: Small caps EUA
+    DIA: Dow Jones
+    SMH: Semicondutores
+    XLK: Tecnologia
+    XLF: Financeiro
+    XLE: Energia
+    XLV: Saúde
+    GLD: Ouro
+    TLT: Treasury 20+ anos
+    EEM: Emergentes
+    EFA: Desenvolvidos ex-EUA
+  Ações:
+    AAPL: Apple
+    MSFT: Microsoft
+    NVDA: Nvidia
+    GOOGL: Alphabet
+    AMZN: Amazon
+    META: Meta
+    AVGO: Broadcom
+    TSM: TSMC
+    ASML: ASML
+    AMD: AMD
+    NFLX: Netflix
+    COST: Costco
+    JPM: JPMorgan
+    V: Visa
+    LLY: Eli Lilly
+    TSLA: Tesla
+    PLTR: Palantir
+    ARM: Arm
+    SOFI: SoFi
+    RKLB: Rocket Lab
+  Cripto:
+    BTC-USD: Bitcoin
+    ETH-USD: Ethereum

@@ -1,0 +1,79 @@
+# Modelos de IA do PWASS. Preços conferidos em 06/11/2026 (US$ por 1 milhão de
+# tokens, entrada / saída). Uma análise típica usa ~10 mil tokens de entrada e
+# ~2 mil de saída: frações de centavo a poucos centavos.
+#
+# Prefixo do modelo = provedor:
+#   sem prefixo  -> OpenRouter (uma chave, todos os modelos, pago por uso)
+#   gemini:      -> Google AI Studio direto (camada GRÁTIS no Gemini Flash)
+#   ollama:      -> Ollama no seu computador (grátis, privado)
+# Os nomes mudam com o tempo: se um falhar, use "Modelo personalizado".
+
+presets:
+  economico:
+    label: "Econômico — Claude Haiku 5.5"
+    model: anthropic/claude-haiku-5.5
+    preco: "0,10 / 0,50"
+    uso: "Padrão do dia a dia: PDFs longos, prints de gráfico, auditorias."
+  gratis_gemini:
+    label: "Grátis — Gemini 3.8 Flash (Google AI Studio)"
+    model: gemini:gemini-3.8-flash
+    preco: "0 na camada grátis"
+    uso: "Custo zero com chave do AI Studio. O Google pode usar o conteúdo: só dados de mercado."
+  profundo:
+    label: "Análise profunda — Claude Sonnet 5.5"
+    model: anthropic/claude-sonnet-5.5
+    preco: "2 / 10"
+    uso: "10-K inteiro, teses complexas, juiz do debate."
+  maximo:
+    label: "Decisão importante — Claude Opus 5.5"
+    model: anthropic/claude-opus-5.5
+    preco: "4 / 20"
+    uso: "Raro: revisão final de uma tese antes de uma posição relevante."
+  segunda_opiniao:
+    label: "Segunda opinião — Gemini 4 Argon"
+    model: google/gemini-4-argon
+    preco: "2 / 10"
+    uso: "Modelo topo do Google; ótimo com documentos longos e tabelas."
+  gpt:
+    label: "Terceira visão — GPT-6.1 Terra"
+    model: openai/gpt-6.1-terra
+    preco: "1 / 5"
+    uso: "Outro 'cérebro' no debate."
+  noticias:
+    label: "Notícias com fontes — Perplexity Sonar"
+    model: perplexity/sonar
+    preco: "1 / 1 (+ ~US$ 0,005 por busca)"
+    uso: "Resumo do mercado com links das fontes."
+  ultra_barato:
+    label: "Ultra barato — DeepSeek V4.1 Flash"
+    model: deepseek/deepseek-v4.1-flash
+    preco: "0,05 / 0,57"
+    uso: "Triagens em massa. Nunca envie dados pessoais."
+  gratis_openrouter:
+    label: "Grátis (OpenRouter) — Gemma 4 31B"
+    model: google/gemma-4-31b-it:free
+    preco: "0 (limites diários)"
+    uso: "Testar sem gastar. Qualidade menor."
+  local:
+    label: "Local — Ollama (no seu PC)"
+    model: ollama:qwen3:8b
+    preco: "0 (roda no seu computador)"
+    uso: "Privado e offline. Instale o Ollama e baixe o modelo antes."
+
+default: economico
+
+debate:
+  bull: google/gemini-3.8-flash
+  bear: openai/gpt-6.1-terra
+  judge: anthropic/claude-sonnet-5.5
+
+# Comitê de IA do Terminal: 3 agentes baratos + juiz mais forte (~US$ 0,02 por análise).
+# Para custo zero, troque todos por "gemini:gemini-3.8-flash" (chave grátis do AI Studio).
+comite:
+  tecnico: anthropic/claude-haiku-5.5
+  fundamental: anthropic/claude-haiku-5.5
+  risco: anthropic/claude-haiku-5.5
+  juiz: anthropic/claude-sonnet-5.5
+
+# Limite de texto enviado por documento (~4 caracteres por token).
+max_doc_chars: 400000

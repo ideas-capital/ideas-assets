@@ -1,0 +1,61 @@
+# Carteiras-modelo do Núcleo. Troque a estratégia ativa em "padrao" ou na tela.
+# tipo fixa: pesos constantes, rebalanceados todo mês.
+# tipo tatica: pesos mudam pelo sinal mensal (gem, gtaa).
+# Os pesos usam ETFs americanos (histórico longo); a execução pode ser em UCITS.
+
+padrao: nucleo_conservador
+
+carteiras:
+  nucleo_conservador:
+    nome: "Núcleo conservador (plano PWASS)"
+    tipo: fixa
+    pesos: {BIL: 0.40, IEF: 0.15, VTI: 0.20, VEU: 0.15, GLD: 0.10}
+    fonte: "Seu plano: preservação, renda e proteção cambial"
+    resumo: "40% caixa em dólar, 15% Treasuries, 35% ações globais, 10% ouro. Prioriza quedas pequenas."
+
+  tres_fundos:
+    nome: "Três fundos (Bogleheads)"
+    tipo: fixa
+    pesos: {VTI: 0.50, VEU: 0.30, AGG: 0.20}
+    fonte: "Taylor Larimore, The Bogleheads' Guide to the Three-Fund Portfolio (2018)"
+    resumo: "Simples e barata: ações EUA, ações resto do mundo e renda fixa. Mais risco, mais retorno."
+
+  global_60_40:
+    nome: "60/40 global"
+    tipo: fixa
+    pesos: {VTI: 0.36, VEU: 0.24, AGG: 0.40}
+    fonte: "Referência clássica de fundos de pensão"
+    resumo: "60% ações globais e 40% renda fixa. O 'meio-termo' padrão do mercado."
+
+  permanente:
+    nome: "Portfólio Permanente"
+    tipo: fixa
+    pesos: {VTI: 0.25, TLT: 0.25, GLD: 0.25, BIL: 0.25}
+    fonte: "Harry Browne, Fail-Safe Investing (1999)"
+    resumo: "Um quarto para cada cenário: crescimento, deflação, inflação e recessão."
+
+  all_weather:
+    nome: "All Weather (aproximação)"
+    tipo: fixa
+    pesos: {VTI: 0.30, TLT: 0.40, IEF: 0.15, GLD: 0.075, DBC: 0.075}
+    fonte: "Versão pública da Bridgewater divulgada por Tony Robbins, Money: Master the Game (2014)"
+    resumo: "Equilibra risco entre ações, títulos longos, ouro e commodities. Sofre com juros subindo."
+
+  gem:
+    nome: "Dual Momentum (GEM)"
+    tipo: tatica
+    fonte: "Gary Antonacci, Dual Momentum Investing (2014)"
+    resumo: "100% no melhor entre EUA e mundo; renda fixa quando ações perdem para T-Bills."
+
+  gtaa:
+    nome: "GTAA / Ivy 5"
+    tipo: tatica
+    fonte: "Mebane Faber, A Quantitative Approach to Tactical Asset Allocation (2007)"
+    resumo: "5 classes; cada uma vai para caixa se estiver abaixo da média de 10 meses."
+
+  sp500:
+    nome: "100% S&P 500 (referência)"
+    tipo: fixa
+    pesos: {SPY: 1.0}
+    fonte: "Referência de mercado"
+    resumo: "Só para comparar: máximo retorno histórico recente, com quedas de 50%."

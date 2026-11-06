@@ -1,0 +1,64 @@
+# Watchlist do Radar de Preço Justo.
+# Este arquivo PODE ir para o GitHub: só tem tickers e faixas-alvo, nenhum saldo.
+#
+# zone_min / zone_max: faixa de entrada que você (ou um terceiro) propôs.
+# fair_value: preço justo estimado por você (Fase 2 calcula automaticamente).
+# source: de onde veio a tese — o Audit Mode registra isso.
+# Deixe null quando ainda não definiu.
+
+strategy:
+  core_target_pct: [80, 90]        # Núcleo de Preservação
+  satellite_max_pct: 20            # Teto do Satélite (ações + cripto)
+  single_position_max_pct: 5       # Teto por ativo satélite, % do patrimônio total
+  crypto_max_pct: 5                # Teto de BTC+ETH somados
+  margin_of_safety_pct: 20         # Desconto mínimo sobre o preço justo p/ "Forte Compra"
+
+satellite:
+  - ticker: NVDA
+    zone_min: 180
+    zone_max: 195
+    fair_value: null
+    source: "exemplo do prompt"
+  - ticker: AMZN
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+  - ticker: AVGO
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+  - ticker: TSLA
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+  - ticker: PLTR
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+  - ticker: ARM
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+  - ticker: SOFI
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+  - ticker: RKLB
+    zone_min: null
+    zone_max: null
+    fair_value: null
+    source: "lista de novembro"
+
+crypto:
+  - ticker: BTC-USD
+    zone_min: null
+    zone_max: null
+  - ticker: ETH-USD
+    zone_min: null
+    zone_max: null

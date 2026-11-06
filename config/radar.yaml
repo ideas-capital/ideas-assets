@@ -1,0 +1,67 @@
+# Radar de ativos. Edite à vontade: grupos, tickers (Yahoo Finance) e limites.
+#
+# esticado: distância máxima acima da média de 200 dias antes de virar
+#           "Esticado". Ativos mais voláteis toleram mais.
+# rsi_quente: RSI a partir do qual o ativo é considerado sobrecomprado.
+
+grupos:
+  Cripto:
+    esticado: 0.50
+    rsi_quente: 80
+    ativos:
+      BTC-USD: Bitcoin
+      ETH-USD: Ethereum
+
+  ETFs de ações do Núcleo (UCITS, Irlanda):
+    esticado: 0.15
+    rsi_quente: 75
+    ativos:
+      VWRA.L: Ações mundo todo
+      CSPX.L: S&P 500
+      EXUS.L: Ações mundo ex-EUA
+      EIMI.L: Ações emergentes
+
+  Renda fixa e ouro (ETFs):
+    # Em títulos, preço caindo = juro subindo. RSI desligado (101): ETFs de
+    # renda fixa sobem devagar e o RSI daria falso "sobrecomprado".
+    # T-Bills (IB01.L / BIL) ficam fora: o preço só sobe; veja a aba de juros.
+    esticado: 0.10
+    rsi_quente: 101
+    ativos:
+      IDTL.L: Treasury 20+ anos (UCITS)
+      AGGU.L: Renda fixa global (UCITS)
+      TIP: Títulos atrelados à inflação (TIPS)
+      LQD: Crédito grau de investimento
+      IGLN.L: Ouro (UCITS)
+
+  ETFs de referência (EUA):
+    esticado: 0.15
+    rsi_quente: 75
+    ativos:
+      VT: Ações mundo todo
+      SPY: S&P 500
+      QQQ: Nasdaq 100
+      SCHD: Dividendos EUA
+      VNQ: Imóveis (REITs)
+
+  Ações globais (líderes):
+    esticado: 0.30
+    rsi_quente: 75
+    ativos:
+      AAPL: Apple
+      MSFT: Microsoft
+      NVDA: Nvidia
+      GOOGL: Alphabet
+      AMZN: Amazon
+      META: Meta
+      AVGO: Broadcom
+      TSM: TSMC
+      ASML: ASML
+      BRK-B: Berkshire Hathaway
+      JPM: JPMorgan
+      LLY: Eli Lilly
+      V: Visa
+      NVO: Novo Nordisk
+
+cambio:
+  BRL=X: Dólar (USD/BRL)

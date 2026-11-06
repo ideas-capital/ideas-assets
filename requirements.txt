@@ -1,0 +1,15 @@
+# IDEAS CAPITAL assets — dependências (todas gratuitas). Python 3.11+ (recomendado 3.12).
+streamlit>=1.45                      # interface web
+streamlit-lightweight-charts-v5>=0.2 # gráfico estilo TradingView (Lightweight Charts v5)
+pandas>=2.2                          # tabelas e séries de tempo
+numpy>=1.26
+plotly>=5.24                         # gráficos de backtest e curvas
+yfinance>=0.2.50                     # cotações e fundamentos (Yahoo Finance)
+requests>=2.32                       # FRED, SEC, Banco Central, Tesouro e IA
+pyyaml>=6.0                          # arquivos de configuração
+pypdf>=5.0                           # extrair texto de PDFs no Analista IA
+openpyxl>=3.1                        # ler planilhas Excel enviadas
+quantstats>=0.0.86                   # relatório completo de performance
+
+# Desenvolvimento
+pytest>=8.3
