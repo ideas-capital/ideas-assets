@@ -15,5 +15,17 @@ Testes: `pytest` 118 verdes (31 antigos + tokens/contraste, config, mercado, smo
 
 Checklist manual: busca global (selectbox renderiza; navegação testada só em AppTest) · troca de tema pelo menu **não verificada** (ver PENDENCIAS) · mobile e exportação não verificados nesta sessão.
 
+## Sessão 2 — Painel + Ativo + Scanner: **concluída**
+Feito:
+- **Regressão numérica primeiro:** fixtures reais (`tests/fixtures/ohlcv_swing.parquet`, `precos_carteiras.parquet`: SPY, QQQ, AAPL, GLD até 05/11/2026 + 8 ETFs mensais) e `golden.json` (3 estratégias × 4 ativos, GEM e GTAA) gerados com o código ANTES de qualquer mudança; `tests/test_regressao.py` compara. Nenhum arquivo de cálculo existente (`swing.py`, `backtest.py`, `strategies.py`...) foi alterado.
+- `indicators.py`: MACD, pivôs clássicos, pivôs de swing (com data de confirmação, sem olhar o futuro) e suporte/resistência, com testes.
+- **Painel**, **Ativo** (6 abas) e **Scanner** (10 filtros, chips, CSV/Excel, clique abre o Ativo) refeitos no Design System; detalhes em `MUDANCAS.md`. `paginas/mercado.py` removida.
+- Novos puros/testados: `engine/mercado.py` (+amplitude/percentil/novidades), `engine/ativo.py`, `engine/screener.py`.
+- Verificação visual em Chromium (Painel dark/light desktop, Painel mobile, Ativo): ok; corrigidos 5A vazio no Ativo, sidebar cobrindo o conteúdo no celular, fonte duplicada no cabeçalho do Painel.
+
+Testes: `pytest` **130 verdes**. Smoke `AppTest` das 9 páginas × 2 temas sem exceção com dados reais (`scripts/smoke_paginas.py`); Scanner exercitado com clique em "Rodar" (25 linhas, 22 colunas). Yahoo `.info`/calendário/notícias ficam intermitentes (401/429) neste ambiente: as telas mostram "—" com motivo.
+
+Limitações conhecidas (ver PENDENCIAS.md): filtros salvos e ★ dependem do store (Sessão 4); troca de tema ao vivo ainda sem verificação manual; Ativo/Scanner não conferidos em 390 px; screenshots oficiais só na Sessão 6.
+
 ## Próxima ação exata
-**Sessão 2** (PROMPT §12): (1) gravar fixtures de regressão (`tests/fixtures/`) e teste de números de swing/carteiras ANTES de tocar engine; (2) refazer o **Painel** (`terminal.py`) com `ticker_strip`, `kpi`, regime/amplitude/VIX, ativo em destaque, oportunidades, insights, fundindo o que servir de `mercado.py`; (3) **Ativo** em abas (+MACD e pivôs em `pwass/engine/indicators.py` com teste); (4) **Scanner** com filtros combináveis, chips e exportação via `data_table`; (5) migrar `theme.card/cards` nessas páginas; (6) atualizar este arquivo e commitar.
+**Sessão 3** (PROMPT §12): (1) **Laboratório de swing** (`paginas/laboratorio.py`, novo): seletor de estratégia, ficha (regras, custos, fonte), métricas completas (inclui exposição e média de ganho/perda), curva de capital, drawdown, histograma por operação, retorno por ano, comparação das 3 estratégias, aviso de viés de sobrevivência; separar BACKTEST de operações reais com `origin_tag`. Extrair o que for cálculo para `pwass/engine/` com teste (sem mudar regras — a regressão deve continuar verde). (2) **Carteiras do Núcleo** (de `estrategias.py`) no novo padrão + comparação lado a lado de 2–3 carteiras. (3) **Zonas de entrada** (`radar.py`) com zonas sobre o gráfico, justificativa e dado de origem. (4) **Analista IA** com formato fixo (Dados observados · Interpretação · Hipóteses · Decisão sem % · Riscos), JSON de entrada com data, modelo/custo/data. (5) Atualizar o menu do `app.py`, este arquivo, e commitar.

@@ -14,7 +14,7 @@ Estado após a Sessão 1: seções e rótulos já aplicados às páginas existen
 | criar/fundir | Laboratório de swing (de `estrategias.py`), Carteiras, Zonas, Analista IA (formato fixo) | 3 |
 | criar | `pwass/store.py`, Watchlist, Comparar, Alertas, Diário, `supabase.sql`, workflow de alertas | 4 |
 | criar | Relatórios (PDF/XLSX), `config/score.yaml` + `SCORE.md` (só se validar), Configurações/Fontes, Guia | 5 |
-| descontinuar | `paginas/mercado.py` (fundir o que for útil no Painel/Radar na Sessão 2 e remover) | 2 |
+| descontinuado | `paginas/mercado.py` — removida na Sessão 2 (ver MUDANCAS.md) | 2 |
 | migrar | `theme.card/cards/table/signal_box` → `components.*` conforme cada página é refeita; aliases v4 em `tokens.LEGACY` saem no fim | 2–6 |
 
 ## Decisões

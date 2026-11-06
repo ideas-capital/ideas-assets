@@ -48,6 +48,8 @@ INFO_KEYS = {
     "target_mean": "targetMeanPrice",
     "n_analysts": "numberOfAnalystOpinions",
     "rec": "recommendationKey",
+    "aum": "totalAssets",
+    "expense_ratio": "netExpenseRatio",
     "summary": "longBusinessSummary",
 }
 
@@ -140,3 +142,37 @@ def same_currency(f: dict) -> bool:
     """
     cur, fin = f.get("currency"), f.get("fin_currency")
     return bool(cur) and (fin is None or cur == fin)
+
+
+def earnings_calendar(tickers: list[str]) -> pd.DataFrame:
+    """Próxima data de resultados por ticker (Yahoo `calendar`). Melhor esforço: falha → linha ausente.
+
+    Retorna colunas Ticker, Data (sem horário; o Yahoo não garante hora). Vazio se o Yahoo não responder.
+    """
+    rows = []
+    for t in tickers:
+        try:
+            cal = yf.Ticker(t).calendar or {}
+            ds = cal.get("Earnings Date") or []
+            if ds:
+                rows.append({"Ticker": t, "Data": pd.Timestamp(min(ds))})
+        except Exception:  # noqa: BLE001 — Yahoo instável
+            continue
+    return pd.DataFrame(rows, columns=["Ticker", "Data"])
+
+
+def news(ticker: str, limit: int = 10) -> list[dict]:
+    """Notícias do Yahoo Finance: lista de {titulo, fonte, link, data}. Só itens com link; falha → lista vazia."""
+    out = []
+    try:
+        for n in (yf.Ticker(ticker).news or [])[:limit * 2]:
+            c = n.get("content") or n
+            link = ((c.get("canonicalUrl") or {}).get("url") or (c.get("clickThroughUrl") or {}).get("url")
+                    or c.get("link"))
+            if not (c.get("title") and link):
+                continue
+            out.append({"titulo": c["title"], "fonte": (c.get("provider") or {}).get("displayName") or c.get("publisher") or "Yahoo Finance",
+                        "link": link, "data": c.get("pubDate") or c.get("providerPublishTime")})
+    except Exception:  # noqa: BLE001
+        return []
+    return out[:limit]

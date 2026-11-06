@@ -71,3 +71,57 @@ def status_nyse(now: dt.datetime) -> tuple[bool, str]:
 
 def status_b3(now: dt.datetime) -> tuple[bool, str]:
     return _status(now, SP, dt.time(10, 0), dt.time(17, 0), feriados_b3)
+
+
+# ------------------------------------------------------------------ inteligência de mercado (Painel)
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+
+from pwass.engine import indicators  # noqa: E402
+
+
+def amplitude(data: dict[str, pd.DataFrame], janela: int = 200) -> dict:
+    """% dos ativos do universo com fechamento acima da média de `janela` dias (ignora quem tem histórico curto).
+
+    >>> amplitude({"A": df_alta, "B": df_baixa})["pct"]  # fração 0–1
+    """
+    acima = [bool(d["Close"].iloc[-1] > indicators.sma(d["Close"], janela).iloc[-1])
+             for d in data.values() if len(d) > janela]
+    n = len(acima)
+    return {"pct": (sum(acima) / n) if n else float("nan"), "acima": sum(acima), "n": n}
+
+
+def tendencia_predominante(pct_acima: float) -> str:
+    """Rótulo pela amplitude: ≥60% alta · 40–60% mista · <40% baixa. NaN → 'indisponível'."""
+    if pct_acima != pct_acima:
+        return "indisponível"
+    return "alta" if pct_acima >= 0.6 else "mista" if pct_acima >= 0.4 else "baixa"
+
+
+def percentil(serie: pd.Series, janela: int = 504) -> float:
+    """Posição (0–1) do último valor dentro dos últimos `janela` pontos (ex.: VIX em 2 anos)."""
+    s = serie.dropna().iloc[-janela:]
+    return float((s <= s.iloc[-1]).mean()) if len(s) else float("nan")
+
+
+def novidades(data: dict[str, pd.DataFrame], sinais: dict[str, pd.DataFrame], nomes: dict[str, str]) -> dict[str, list[str]]:
+    """O que mudou no último pregão, por regra determinística.
+
+    `sinais` = {ticker: swing.signals(df, ...)}. Retorna listas de tickers:
+    novos_setups (entrada hoje e não ontem), cruzou_mm200_acima / cruzou_mm200_abaixo.
+    """
+    out: dict[str, list[str]] = {"novos_setups": [], "cruzou_mm200_acima": [], "cruzou_mm200_abaixo": []}
+    for t, sg in sinais.items():
+        if len(sg) > 2 and bool(sg["entry"].iloc[-1]) and not bool(sg["entry"].iloc[-2]):
+            out["novos_setups"].append(t)
+    for t, d in data.items():
+        if len(d) <= 201:
+            continue
+        c = d["Close"]
+        m = indicators.sma(c, 200)
+        hoje, ontem = c.iloc[-1] > m.iloc[-1], c.iloc[-2] > m.iloc[-2]
+        if hoje and not ontem:
+            out["cruzou_mm200_acima"].append(t)
+        elif ontem and not hoje:
+            out["cruzou_mm200_abaixo"].append(t)
+    return out

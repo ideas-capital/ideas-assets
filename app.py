@@ -13,7 +13,7 @@ from pwass.engine import mercado
 from pwass.ui import cache, components, settings, theme
 
 st.set_page_config(page_title="IDEAS CAPITAL assets", page_icon=":material/candlestick_chart:",
-                   layout="wide", initial_sidebar_state="expanded")
+                   layout="wide", initial_sidebar_state="auto")
 theme.inject()
 ROOT = Path(__file__).parent
 

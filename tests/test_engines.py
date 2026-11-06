@@ -87,3 +87,35 @@ def test_qvm_ranks_and_skips_currency_mismatch():
     out = factors.qvm(fund, close)
     assert out.index[0] == "A" and out.index[-1] == "C"
     assert bool(out.loc["B", "Moeda balanço ≠ preço"])
+
+
+def test_macd_formula_e_historico():
+    import numpy as np
+    import pandas as pd
+    from pwass.engine import indicators as I
+    c = pd.Series(np.linspace(100, 150, 120) + np.sin(np.arange(120)))
+    m = I.macd(c)
+    ref = c.ewm(span=12, adjust=False).mean() - c.ewm(span=26, adjust=False).mean()
+    assert np.allclose(m["macd"].dropna(), ref.loc[m["macd"].dropna().index])
+    assert np.allclose(m["hist"].dropna(), (m["macd"] - m["signal"]).dropna())
+    assert m["macd"].iloc[:25].isna().all()      # sem valores antes da janela lenta
+
+
+def test_pivot_points_classicos():
+    from pwass.engine import indicators as I
+    p = I.pivot_points(110, 90, 100)
+    assert p["P"] == 100 and p["R1"] == 110 and p["S1"] == 90 and p["R2"] == 120 and p["S2"] == 80
+
+
+def test_swing_pivots_e_suporte_resistencia():
+    import numpy as np
+    import pandas as pd
+    from pwass.engine import indicators as I
+    c = np.array([10, 11, 12, 13, 14, 13, 12, 11, 10, 11, 12, 13, 14, 15, 14, 13, 12, 13], float)
+    idx = pd.bdate_range("2024-01-01", periods=len(c))
+    df = pd.DataFrame({"High": c + .1, "Low": c - .1, "Close": c}, index=idx)
+    pv = I.swing_pivots(df, 3, 3)
+    assert list(pv.tipo) == ["topo", "fundo", "topo"] and pv.preco.iloc[0] == 14.1 and pv.preco.iloc[1] == 9.9
+    assert (pv.confirmado_em > pv.data).all()      # nunca usa o futuro
+    sr = I.support_resistance(df, 3, 3, lookback=100)
+    assert sr["suportes"] == [9.9] and sr["resistencias"] == [14.1, 15.1]

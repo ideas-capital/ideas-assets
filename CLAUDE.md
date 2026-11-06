@@ -18,7 +18,8 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
   botões de estratégia (`st.session_state["estrategia_swing"]`), tema claro/escuro.
 - `paginas/`: uma tela por arquivo. `terminal.py` é a inicial.
 - `pwass/engine/`: funções puras e testadas. `swing.py` (3 estratégias + backtest), `strategies.py`
-  (GEM/GTAA/carteiras), `backtest.py`, `factors.py` (QVM), `valuation.py`, `health.py` (semáforo), `radar.py`.
+  (GEM/GTAA/carteiras), `backtest.py`, `factors.py` (QVM), `valuation.py`, `health.py` (semáforo), `radar.py`, `mercado.py` (pregão NYSE/B3, amplitude, novidades),
+  `screener.py` (filtros do Scanner), `ativo.py` (classe do ativo, performance), `indicators.py` (MM, RSI, Bollinger, MACD, pivôs).
 - `pwass/data/`: toda chamada de rede (Yahoo, FRED CSV, SEC, BCB SGS/Focus, Tesouro Transparente).
 - `pwass/ai/`: `openrouter.py` (cliente OpenAI-compatível; prefixos `gemini:`/`ollama:`), `prompts.py`,
   `committee.py` (3 agentes + juiz), `documents.py`.
@@ -45,4 +46,5 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
 ## Redesign v5 (em andamento)
 Design System: `docs/redesign/DESIGN-SYSTEM.md`; tokens em `pwass/ui/tokens.py` (fonte única de cores; `.streamlit/config.toml` espelha). Componentes novos em `pwass/ui/components.py`.
 Instruções completas em `docs/redesign/PROMPT-REDESIGN-v5.md`; progresso em `docs/redesign/PROGRESSO.md`.
+Regressão numérica: `tests/test_regressao.py` compara swing/carteiras com `tests/fixtures/golden.json` (só regravar com `python -m tests.regressao` ao mudar regra de propósito).
 Trabalhar na branch `redesign-v5` e retomar sempre pela próxima ação registrada no PROGRESSO.

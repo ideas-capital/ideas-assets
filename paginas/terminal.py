@@ -1,8 +1,8 @@
-"""Mercado hoje — o Terminal do IDEAS CAPITAL assets.
+"""Painel (Mercado hoje) — objetivo: em 30 segundos saber o regime e se há algo a fazer hoje.
 
-Topo: regime, alertas e recursos. Faixa de cotações. Sinal do dia da estratégia
-ativa (com plano de entrada, stop, alvos e tamanho da posição). Gráfico TradingView
-com métricas reais do backtest. Radar de sinais e todas as classes embaixo.
+Ordem: faixa de mercado → inteligência de mercado (regime, amplitude, VIX, eventos) → sinal do dia
+→ ativo em destaque (gráfico + métricas da regra) → oportunidades → o que mudou → IA.
+Cálculos em pwass/engine (swing.py, mercado.py); dados em pwass/data via pwass/ui/cache.py.
 """
 import math
 
@@ -10,12 +10,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
-from pwass import radar as R
 from pwass.ai import committee
 from pwass.data import fred
-from pwass.engine import indicators, swing as S
+from pwass.engine import indicators, mercado, swing as S
 from pwass.engine.radar import zone_status
-from pwass.ui import cache, charts, context, settings, theme, tvchart
+from pwass.ai import prompts
+from pwass.ui import cache, charts, components as ds, context, settings, theme, tvchart
 from pwass.ui.theme import badge, colored_pct, esc, num, pct
 
 sw = cache.config("swing")
@@ -25,15 +25,15 @@ names = {t: (n, g) for g, d in sw["universo"].items() for t, n in d.items()}
 ia_on = st.session_state.get("ia_alertas", True)
 
 # ------------------------------------------------------------------ dados
-TICKER_STRIP = [("^GSPC", "S&P 500"), ("^NDX", "Nasdaq 100"), ("BTC-USD", "Bitcoin"), ("ETH-USD", "Ethereum"),
-                ("GC=F", "Ouro"), ("BRL=X", "USD/BRL"), ("^TNX", "Juro 10a EUA"), ("^VIX", "VIX")]
-RISK_CLASSES = ("SPY", "QQQ", "IWM", "VEU", "EEM", "VNQ", "DBC")
+pcfg = cache.config("painel")
+STRIP = pcfg["faixa"]
+RISK_CLASSES = tuple(pcfg["classes_risco"])
 with st.spinner("Carregando mercado e rodando as estratégias..."):
     data = cache.ohlcv(tuple(names), "10y")
-    strip = cache.prices(tuple(t for t, _ in TICKER_STRIP) + RISK_CLASSES, "2y")
+    strip = cache.prices(tuple(i["ticker"] for i in STRIP) + RISK_CLASSES, "2y")
     table, bts = S.scan(data, names, sid, strat, risk)
 
-up = sum(bool(strip[t].dropna().iloc[-1] > indicators.sma(strip[t].dropna(), 200).iloc[-1]) for t in RISK_CLASSES)
+up = sum(bool(strip[t].dropna().iloc[-1] > indicators.sma(strip[t].dropna(), 200).iloc[-1]) for t in RISK_CLASSES if t in strip)
 regime, rkind = ("FAVORÁVEL", "ok") if up >= 5 else ("MISTO", "warn") if up >= 3 else ("DEFENSIVO", "bad")
 
 # ------------------------------------------------------------------ alertas
@@ -50,16 +50,16 @@ for it in cache.config("watchlist").get("satellite", []):
             alerts.append(("info", f"<b>{t}</b> entrou na sua zona de entrada ({it['zone_min']}–{it['zone_max']})"))
 
 # ------------------------------------------------------------------ cabeçalho
-REC = {"rec_ticker": "Faixa de cotações", "rec_sinal": "Sinal do dia", "rec_grafico": "Gráfico",
-       "rec_metricas": "Métricas da estratégia", "rec_tabela": "Radar e classes", "rec_ia": "Comitê de IA"}
+REC = {"rec_ticker": "Faixa de mercado", "rec_inteligencia": "Inteligência de mercado", "rec_sinal": "Sinal do dia",
+       "rec_grafico": "Gráfico", "rec_metricas": "Métricas da estratégia", "rec_tabela": "Oportunidades e novidades",
+       "rec_ia": "IA"}
 for k in REC:
     st.session_state.setdefault(k, True)
 
+asof_px = max(strip[i["ticker"]].dropna().index[-1] for i in STRIP if i["ticker"] in strip)
 h1, h2, h3 = st.columns([6.2, 1.3, 1.7], vertical_alignment="center")
-h1.markdown(f'<div class="ic-title"><h2>MERCADO HOJE</h2><span class="ic-pill">REGIME: '
-            f'<b style="color:var(--{"up" if rkind == "ok" else "warn" if rkind == "warn" else "down"})">{regime}</b>'
-            f' ({up} de {len(RISK_CLASSES)} classes de risco acima da MM200)</span>'
-            f'<span class="ic-pill">Estratégia: <b>{esc(strat["nome"])}</b></span></div>', unsafe_allow_html=True)
+with h1:
+    ds.page_header("Painel", f"Estratégia ativa: {strat['nome']}")
 if ia_on:
     with h2.popover(f"Alertas · {len(alerts)}", icon=":material/notifications:", width="stretch"):
         if not alerts:
@@ -71,20 +71,53 @@ with h3.popover("Recursos", icon=":material/tune:", width="stretch"):
     for k, label in REC.items():
         st.toggle(label, key=k)
 
-# ------------------------------------------------------------------ faixa de cotações
+# ------------------------------------------------------------------ faixa de mercado
 if st.session_state["rec_ticker"]:
     items = []
-    for t, label in TICKER_STRIP:
-        if t not in strip:
+    for i in STRIP:
+        if i["ticker"] not in strip:
+            items.append({"nome": i["nome"], "valor": "—", "var": None})  # indisponível, não estimado
             continue
-        s = strip[t].dropna()
-        chg = s.iloc[-1] / s.iloc[-2] - 1
-        digits = 4 if t == "BRL=X" else 2
-        items.append(f'<div class="ic-tk"><div class="row"><span class="n">{label}</span>'
-                     f'<span class="p">{num(s.iloc[-1], digits)}</span></div>'
-                     f'<div class="row"><span style="font-size:.72rem;color:var(--muted)">{s.index[-1]:%d/%m}</span>'
-                     f'{colored_pct(chg, 2)}</div>{theme.sparkline(s.iloc[-60:])}</div>')
-    st.markdown(f'<div class="ic-ticker">{"".join(items)}</div>', unsafe_allow_html=True)
+        s_ = strip[i["ticker"]].dropna()
+        items.append({"nome": i["nome"], "valor": num(s_.iloc[-1], i["casas"]),
+                      "var": float(s_.iloc[-1] / s_.iloc[-2] - 1), "spark": list(s_.iloc[-60:])})
+    ds.ticker_strip(items, source="Yahoo Finance", asof=f"último pregão de cada ativo, até {asof_px:%d/%m/%Y} · diário")
+
+# ------------------------------------------------------------------ inteligência de mercado
+amp = mercado.amplitude(data)
+vix_s = strip["^VIX"].dropna() if "^VIX" in strip else None
+vix_pct = mercado.percentil(vix_s) if vix_s is not None else float("nan")
+cal_tk = tuple(i["ticker"] for i in cache.config("watchlist").get("satellite", []))
+if st.session_state["rec_inteligencia"]:
+    c1, c2, c3, c4 = st.columns(4)
+    regime_kind = {"ok": "up", "warn": "warn", "bad": "down"}[rkind]
+    c1.markdown(ds.kpi("Regime", f'<span style="color:var(--{regime_kind})">{regime}</span>',
+                       source=f"{up} de {len(RISK_CLASSES)} classes de risco acima da MM200 (calculado)"),
+                unsafe_allow_html=True)
+    c1.caption(f"{up} de {len(RISK_CLASSES)} classes acima da MM200")
+    c2.markdown(ds.kpi("Amplitude (> MM200)", pct(amp["pct"], 0, False),
+                       source=f"{amp['acima']} de {amp['n']} ativos do universo do laboratório (calculado)"),
+                unsafe_allow_html=True)
+    c2.caption(f"{amp['acima']} de {amp['n']} ativos · tendência predominante: **{mercado.tendencia_predominante(amp['pct'])}**")
+    c3.markdown(ds.kpi("VIX", num(vix_s.iloc[-1], 1) if vix_s is not None else "—",
+                       source="Yahoo Finance (^VIX), observado"), unsafe_allow_html=True)
+    c3.caption(f"percentil {pct(vix_pct, 0, False)} nos últimos 2 anos" if vix_pct == vix_pct else "percentil indisponível")
+    with c4:
+        cal = cache.earnings_calendar(cal_tk) if cal_tk else None
+        prox = cal[(cal["Data"] >= pd.Timestamp.today().normalize()) &
+                   (cal["Data"] <= pd.Timestamp.today().normalize() + pd.Timedelta(days=7))] if cal is not None and not cal.empty else None
+        if prox is not None and not prox.empty:
+            ev = "<br>".join(f"{r.Ticker} · {r.Data:%d/%m}" for r in prox.sort_values("Data").itertuples())
+            st.markdown(ds.kpi("Resultados na semana (watchlist)", f'<span style="font-size:14px">{ev}</span>',
+                               source="Yahoo Finance calendar"), unsafe_allow_html=True)
+        else:
+            st.markdown(ds.kpi("Resultados na semana (watchlist)", "—",
+                               source="Sem resultados previstos ou calendário indisponível no Yahoo"),
+                        unsafe_allow_html=True)
+            st.caption("Nenhum resultado previsto ou dado indisponível")
+    st.markdown(ds.source_note("Calculado pelo app a partir de dados do Yahoo Finance",
+                               f"{asof_px:%d/%m/%Y} · universo e classes em config/swing.yaml e painel.yaml"),
+                unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ sinal do dia
 best = S.best_setup(table)
@@ -251,33 +284,62 @@ if ia_on and st.session_state["rec_ia"]:
             if res:
                 st.caption(f"Custo total do comitê: US$ {total:.4f}")
 
-# ------------------------------------------------------------------ tabelas
-SIT_KIND = {S.COMPRA: "solid-ok", S.SAIR: "solid-bad", S.POSICAO: "info", S.PERTO: "warn",
-            S.AGUARDAR: "mute", S.EVITAR: "bad"}
-Q_KIND = {"Bom": "ok", "Regular": "info", "Pouco histórico": "mute", "Fraco": "bad"}
+# ------------------------------------------------------------------ oportunidades e novidades
 if st.session_state["rec_tabela"]:
-    t1, t2 = st.tabs([f"Radar de sinais · {strat['curto']}", "Todas as classes"])
-    with t1:
-        groups = ["Todos"] + list(sw["universo"])
-        g = st.segmented_control("Classe", groups, default="Todos", key="term_grp") or "Todos"
-        view = table if g == "Todos" else table[table["Classe"] == g]
-        rows = [[f"<b>{r.Ticker}</b> <span style='color:var(--muted)'>{esc(r.Ativo)}</span>", num(r["Último"]),
-                 colored_pct(r["Dia"], 2), badge(r["Situação"], SIT_KIND[r["Situação"]]),
-                 badge(r["Histórico"], Q_KIND[r["Histórico"]]), str(r["Operações"]), pct(r["Acerto"], 0, False),
-                 num(r["Profit factor"], 2), pct(r["Resultado médio"], 2), pct(r["CAGR"]), pct(r["CAGR B&H"]),
-                 esc(r["Detalhe"])] for _, r in view.iterrows()]
-        st.markdown(theme.table([("Ativo", ""), ("Último", "r"), ("Dia", "r"), ("Situação", ""), ("Histórico", ""),
-                                 ("Ops", "r"), ("Acerto", "r"), ("PF", "r"), ("Médio/op", "r"), ("a.a. regra", "r"),
-                                 ("a.a. B&H", "r"), ("Detalhe", "w")], rows), unsafe_allow_html=True)
-        st.caption("Histórico = qualidade da regra NAQUELE ativo nos últimos ~10 anos (Bom: profit factor ≥ 1,5; "
-                   "Regular: ≥ 1,1; Fraco: abaixo). 'a.a. regra' considera só o tempo posicionado; compare com o B&H.")
-    with t2:
-        rcfg = cache.config("radar")
-        assets, _ = R.assets(rcfg, cache.LOADERS, with_fundamentals=False)
-        LK = {"verde": "ok", "azul": "info", "amarelo": "warn", "vermelho": "bad"}
-        rows = [[f"<b>{esc(r['Ativo'])}</b> <span style='color:var(--muted)'>{r['Ticker']}</span>",
-                 num(r["Preço"]), colored_pct(r["1 mês"]), colored_pct(r["12 meses"]), colored_pct(r["vs MM200"]),
-                 num(r["RSI"], 0), badge(r["_status"].upper(), LK[r["_cor"]]), esc(r["Postura prudente"])]
-                for _, r in assets.iterrows()]
-        st.markdown(theme.table([("Ativo", ""), ("Último", "r"), ("1 mês", "r"), ("12 meses", "r"), ("vs MM200", "r"),
-                                 ("RSI", "r"), ("Leitura", ""), ("Postura", "w")], rows), unsafe_allow_html=True)
+    st.markdown(f"#### Oportunidades · {strat['curto']}")
+    groups = ["Todos"] + list(sw["universo"])
+    f1, f2 = st.columns([3, 2], vertical_alignment="bottom")
+    g = f1.segmented_control("Classe", groups, default="Todos", key="term_grp") or "Todos"
+    so_acao = f2.toggle("Só com ação (esconde AGUARDAR e EVITAR)", value=True, key="term_so_acao")
+    view = table if g == "Todos" else table[table["Classe"] == g]
+    if so_acao:
+        view = view[~view["Situação"].isin([S.AGUARDAR, S.EVITAR])]
+    show_t = view[["Ticker", "Ativo", "Classe", "Último", "Dia", "Situação", "Histórico", "Operações", "Acerto",
+                   "Profit factor", "Resultado médio", "CAGR", "CAGR B&H", "Detalhe"]].copy()
+    show_t["Acerto"] *= 100
+    ds.chips([f"Estratégia: {strat['curto']}", f"Classe: {g}", "Só com ação" if so_acao else "Todas as situações"])
+    ds.data_table(show_t, key="term_opp", export_name=f"oportunidades_{sid}", on_select_open_asset="Ticker",
+                  source="Yahoo Finance · backtest da regra em ~10 anos (simulado)", asof=f"{asof_px:%d/%m/%Y}",
+                  column_config={"Último": st.column_config.NumberColumn(format="%.2f"),
+                                 "Dia": st.column_config.NumberColumn(format="percent"),
+                                 "Acerto": st.column_config.NumberColumn("Acerto", format="%.0f%%"),
+                                 "Profit factor": st.column_config.NumberColumn("PF", format="%.2f"),
+                                 "Resultado médio": st.column_config.NumberColumn("Médio/op.", format="percent"),
+                                 "CAGR": st.column_config.NumberColumn("a.a. regra", format="percent"),
+                                 "CAGR B&H": st.column_config.NumberColumn("a.a. B&H", format="percent"),
+                                 "Detalhe": st.column_config.TextColumn(width="large")})
+    st.caption("Histórico = qualidade da regra NAQUELE ativo nos últimos ~10 anos (Bom: profit factor ≥ 1,5; Regular: ≥ 1,1; "
+               "Fraco: abaixo). Clique numa linha para abrir o ativo. O universo atual tem viés de sobrevivência.")
+
+    st.markdown("#### O que mudou no último pregão")
+    sinais = {t: S.signals(data[t], sid, strat) for t in bts}
+    nov = mercado.novidades(data, sinais, {t: n for t, (n, _) in names.items()})
+    saidas = table[table["Situação"] == S.SAIR]["Ticker"].tolist()
+    linhas = [("Novos setups de compra", nov["novos_setups"]), ("Regra de saída acionada", saidas),
+              ("Cruzaram a MM200 para cima", nov["cruzou_mm200_acima"]),
+              ("Cruzaram a MM200 para baixo", nov["cruzou_mm200_abaixo"])]
+    if any(v for _, v in linhas):
+        for rot, v in linhas:
+            if v:
+                st.markdown(f"- **{rot}:** {', '.join(v)}")
+    else:
+        ds.empty_state("Sem mudanças relevantes", "Nenhum novo setup, saída ou cruzamento da MM200 no último pregão.")
+    st.markdown(ds.source_note("Calculado pelo app (regras determinísticas)", f"{asof_px:%d/%m/%Y}"), unsafe_allow_html=True)
+
+# ------------------------------------------------------------------ resumo do mercado por IA (veio da antiga página "Mercado")
+if ia_on and st.session_state["rec_ia"]:
+    with st.expander("Resumo do dia com IA", icon=":material/auto_awesome:"):
+        st.caption("A IA recebe a faixa de mercado e o regime calculados acima e busca notícias recentes na web "
+                   "(interpretação, não dado). Custo típico: menos de US$ 0,02.")
+        model_r = settings.model_picker("mercado_modelo", default_preset="noticias")
+        if st.button("Gerar resumo do mercado", type="primary", key="btn_resumo"):
+            linhas_t = "\n".join(f"{i['nome']}: {num(strip[i['ticker']].dropna().iloc[-1], i['casas'])} "
+                                  f"({pct(strip[i['ticker']].dropna().iloc[-1] / strip[i['ticker']].dropna().iloc[-2] - 1, 2)} no dia)"
+                                  for i in STRIP if i["ticker"] in strip)
+            extra = (f"Regime: {regime} ({up}/{len(RISK_CLASSES)} classes de risco acima da MM200). "
+                     f"Amplitude: {pct(amp['pct'], 0, False)} dos ativos acima da MM200. VIX percentil {pct(vix_pct, 0, False)}.")
+            res = settings.ask_ai([{"role": "system", "content": prompts.SYSTEM},
+                                   {"role": "user", "content": prompts.market_brief(linhas_t, extra)}],
+                                  model=model_r, web=not model_r.startswith("perplexity/"))
+            if res:
+                settings.show_result(res, "resumo-mercado.md")

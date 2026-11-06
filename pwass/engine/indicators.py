@@ -50,3 +50,45 @@ def snapshot(close: pd.Series) -> dict:
         # Múltiplo de Mayer = preço / SMA200 diária (usado no módulo cripto)
         "mayer": last / float(s200) if pd.notna(s200) else float("nan"),
     }
+
+
+def macd(close: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9) -> pd.DataFrame:
+    """MACD clássico (Appel): EMA(fast) − EMA(slow), linha de sinal e histograma."""
+    line = close.ewm(span=fast, adjust=False, min_periods=slow).mean() - close.ewm(span=slow, adjust=False, min_periods=slow).mean()
+    sig = line.ewm(span=signal, adjust=False, min_periods=signal).mean()
+    return pd.DataFrame({"macd": line, "signal": sig, "hist": line - sig})
+
+
+def pivot_points(high: float, low: float, close: float) -> dict[str, float]:
+    """Pivôs clássicos a partir da máxima, mínima e fechamento do período ANTERIOR (ex.: mês passado)."""
+    p = (high + low + close) / 3
+    return {"S2": p - (high - low), "S1": 2 * p - high, "P": p, "R1": 2 * p - low, "R2": p + (high - low)}
+
+
+def swing_pivots(df: pd.DataFrame, left: int = 5, right: int = 5) -> pd.DataFrame:
+    """Topos e fundos locais (fractais): a máxima é pivô se for a maior das `left` barras antes e `right` depois.
+
+    Atenção: o pivô só é CONFIRMADO `right` barras depois; a coluna `confirmado_em` traz essa data
+    (sem ela, usar o pivô no gráfico passado seria olhar o futuro). Retorna colunas tipo ('topo'/'fundo'),
+    preço, data e confirmado_em.
+    """
+    rows = []
+    idx = df.index
+    for col, tipo, fn in (("High", "topo", max), ("Low", "fundo", min)):
+        s = df[col].to_numpy()
+        for i in range(left, len(s) - right):
+            w = s[i - left:i + right + 1]
+            if s[i] == fn(w) and list(w).count(s[i]) == 1:
+                rows.append({"tipo": tipo, "preco": float(s[i]), "data": idx[i], "confirmado_em": idx[i + right]})
+    return pd.DataFrame(rows, columns=["tipo", "preco", "data", "confirmado_em"]).sort_values("data").reset_index(drop=True)
+
+
+def support_resistance(df: pd.DataFrame, left: int = 5, right: int = 5, lookback: int = 250, n: int = 3) -> dict[str, list[float]]:
+    """Suportes (fundos abaixo do preço) e resistências (topos acima) mais próximos do último fechamento,
+    usando pivôs confirmados nos últimos `lookback` pregões."""
+    d = df.iloc[-lookback:]
+    last = float(d["Close"].iloc[-1])
+    pv = swing_pivots(d, left, right)
+    sup = sorted((p for p in pv.loc[pv.tipo == "fundo", "preco"] if p < last), reverse=True)[:n]
+    res = sorted(p for p in pv.loc[pv.tipo == "topo", "preco"] if p > last)[:n]
+    return {"suportes": sup, "resistencias": res}

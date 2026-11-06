@@ -38,6 +38,16 @@ def history(ticker: str, period: str = "5y") -> pd.Series:
     return market.history(ticker, period)
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
+def news(ticker: str) -> list[dict]:
+    return market.news(ticker)
+
+
+@st.cache_data(ttl=6 * 3600, show_spinner=False)
+def earnings_calendar(tickers: tuple[str, ...]) -> pd.DataFrame:
+    return market.earnings_calendar(list(tickers))
+
+
 @st.cache_data(ttl=6 * 3600, show_spinner=False)
 def fundamentals(ticker: str) -> dict:
     return market.fundamentals(ticker)
