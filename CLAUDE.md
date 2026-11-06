@@ -41,3 +41,7 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
 3. Módulo fiscal (Lei 14.754, custo médio do dólar).
 4. Protocolo de Emergência / sucessão (local, cifrado).
 5. Fundamentos oficiais via edgartools (XBRL da SEC).
+
+## Redesign v5 (em andamento)
+Instruções completas em `docs/redesign/PROMPT-REDESIGN-v5.md`; progresso em `docs/redesign/PROGRESSO.md`.
+Trabalhar na branch `redesign-v5` e retomar sempre pela próxima ação registrada no PROGRESSO.
