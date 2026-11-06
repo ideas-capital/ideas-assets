@@ -1,0 +1,464 @@
+{
+ "carteiras": {
+  "gem": {
+   "equity_final": 472.681429719,
+   "metricas": {
+    "Melhor ano": 0.289185056,
+    "Meses": 222,
+    "Pior ano": -0.168812872,
+    "Pior queda (máx. drawdown)": -0.195286547,
+    "Retorno a.a. (CAGR)": 0.087584888,
+    "Sharpe": 0.728018643,
+    "Volatilidade a.a.": 0.126787317
+   },
+   "n_meses": 222
+  },
+  "gtaa": {
+   "equity_final": 249.169341425,
+   "metricas": {
+    "Melhor ano": 0.209892369,
+    "Meses": 227,
+    "Pior ano": -0.058694309,
+    "Pior queda (máx. drawdown)": -0.121262404,
+    "Retorno a.a. (CAGR)": 0.049445929,
+    "Sharpe": 0.753645589,
+    "Volatilidade a.a.": 0.067154305
+   },
+   "n_meses": 227
+  }
+ },
+ "swing": {
+  "cruzamento/AAPL": {
+   "equity_final": 2.815923479,
+   "n_trades": 15,
+   "plano": {
+    "R": 17.738114216,
+    "alvo1": 370.777184751,
+    "alvo2": 397.384356075,
+    "atr": 8.869057108,
+    "entrada": 344.170013428,
+    "quantidade": 2.818788931,
+    "risco_pct_preco": 0.051538814,
+    "risco_usd": 50.0,
+    "stop": 326.431899212,
+    "valor": 970.142624075
+   },
+   "soma_retornos": 1.128795929,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.299085386,
+    "CAGR estratégia": 0.110043294,
+    "Dias médios": 73.933333333,
+    "Ganho médio": 0.280384534,
+    "Máx. queda buy & hold": -0.385158952,
+    "Máx. queda estratégia": -0.300835426,
+    "Operações": 15,
+    "Perda média": -0.061501253,
+    "Profit factor": 3.039336831,
+    "Resultado médio": 0.075253062,
+    "Taxa de acerto": 0.4,
+    "Tempo posicionado": 0.504201681
+   },
+   "status_hoje": [
+    "EM POSIÇÃO",
+    "Comprado há 138 dias, +27.0%; saída se fechar abaixo de 335.21."
+   ]
+  },
+  "cruzamento/GLD": {
+   "equity_final": 2.71147399,
+   "n_trades": 14,
+   "plano": {
+    "R": 13.268281163,
+    "alvo1": 395.392411979,
+    "alvo2": 415.294833724,
+    "atr": 6.634140582,
+    "entrada": 375.489990234,
+    "quantidade": 3.328983548,
+    "risco_pct_preco": 0.035335912,
+    "risco_usd": 44.169889705,
+    "stop": 362.221709071,
+    "valor": 1250.0
+   },
+   "soma_retornos": 1.212369703,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.12912404,
+    "CAGR estratégia": 0.105820362,
+    "Dias médios": 84.357142857,
+    "Ganho médio": 0.186647431,
+    "Máx. queda buy & hold": -0.282556961,
+    "Máx. queda estratégia": -0.185238932,
+    "Operações": 14,
+    "Perda média": -0.013451759,
+    "Profit factor": 13.875317773,
+    "Resultado médio": 0.086597836,
+    "Taxa de acerto": 0.5,
+    "Tempo posicionado": 0.476990796
+   },
+   "status_hoje": [
+    "EVITAR",
+    "Abaixo da MM200: fora do filtro de tendência."
+   ]
+  },
+  "cruzamento/QQQ": {
+   "equity_final": 2.068838251,
+   "n_trades": 15,
+   "plano": {
+    "R": 30.592272979,
+    "alvo1": 692.938397262,
+    "alvo2": 738.826806731,
+    "atr": 15.29613649,
+    "entrada": 647.049987793,
+    "quantidade": 1.634399642,
+    "risco_pct_preco": 0.047279613,
+    "risco_usd": 50.0,
+    "stop": 616.457714813,
+    "valor": 1057.538268286
+   },
+   "soma_retornos": 0.844251277,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.194531157,
+    "CAGR estratégia": 0.076063673,
+    "Dias médios": 88.533333333,
+    "Ganho médio": 0.115374279,
+    "Máx. queda buy & hold": -0.351187288,
+    "Máx. queda estratégia": -0.199149176,
+    "Operações": 15,
+    "Perda média": -0.032352873,
+    "Profit factor": 5.349182408,
+    "Resultado médio": 0.056283418,
+    "Taxa de acerto": 0.6,
+    "Tempo posicionado": 0.537014806
+   },
+   "status_hoje": [
+    "EVITAR",
+    "Abaixo da MM200: fora do filtro de tendência."
+   ]
+  },
+  "cruzamento/SPY": {
+   "equity_final": 1.466051908,
+   "n_trades": 10,
+   "plano": {
+    "R": 21.185510443,
+    "alvo1": 764.778265664,
+    "alvo2": 796.556531328,
+    "atr": 10.592755221,
+    "entrada": 733.0,
+    "quantidade": 1.7053206,
+    "risco_pct_preco": 0.02890247,
+    "risco_usd": 36.128087385,
+    "stop": 711.814489557,
+    "valor": 1250.0
+   },
+   "soma_retornos": 0.378144249,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.146351662,
+    "CAGR estratégia": 0.039332615,
+    "Dias médios": 104.3,
+    "Ganho médio": 0.084242745,
+    "Máx. queda buy & hold": -0.337172803,
+    "Máx. queda estratégia": -0.233544162,
+    "Operações": 10,
+    "Perda média": -0.031828056,
+    "Profit factor": 3.970211641,
+    "Resultado médio": 0.037814425,
+    "Taxa de acerto": 0.6,
+    "Tempo posicionado": 0.476990796
+   },
+   "status_hoje": [
+    "SAIR",
+    "Regra de saída acionada hoje: vender na abertura (+4.3% na operação)."
+   ]
+  },
+  "pullback/AAPL": {
+   "equity_final": 1.234441047,
+   "n_trades": 82,
+   "plano": {
+    "R": 17.738114216,
+    "alvo1": 370.777184751,
+    "alvo2": 397.384356075,
+    "atr": 8.869057108,
+    "entrada": 344.170013428,
+    "quantidade": 2.818788931,
+    "risco_pct_preco": 0.051538814,
+    "risco_usd": 50.0,
+    "stop": 326.431899212,
+    "valor": 970.142624075
+   },
+   "soma_retornos": 0.246382597,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.299085386,
+    "CAGR estratégia": 0.021465967,
+    "Dias médios": 4.170731707,
+    "Ganho médio": 0.01831656,
+    "Máx. queda buy & hold": -0.385158952,
+    "Máx. queda estratégia": -0.156593675,
+    "Operações": 82,
+    "Perda média": -0.026525417,
+    "Profit factor": 1.331733843,
+    "Resultado médio": 0.003004666,
+    "Taxa de acerto": 0.658536585,
+    "Tempo posicionado": 0.169667867
+   },
+   "status_hoje": [
+    "AGUARDAR",
+    "Tendência de alta, mas sem gatilho hoje."
+   ]
+  },
+  "pullback/GLD": {
+   "equity_final": 1.170972132,
+   "n_trades": 61,
+   "plano": {
+    "R": 13.268281163,
+    "alvo1": 395.392411979,
+    "alvo2": 415.294833724,
+    "atr": 6.634140582,
+    "entrada": 375.489990234,
+    "quantidade": 3.328983548,
+    "risco_pct_preco": 0.035335912,
+    "risco_usd": 44.169889705,
+    "stop": 362.221709071,
+    "valor": 1250.0
+   },
+   "soma_retornos": 0.173918679,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.12912404,
+    "CAGR estratégia": 0.016043398,
+    "Dias médios": 4.360655738,
+    "Ganho médio": 0.014134482,
+    "Máx. queda buy & hold": -0.282556961,
+    "Máx. queda estratégia": -0.124945516,
+    "Operações": 61,
+    "Perda média": -0.017151187,
+    "Profit factor": 1.460924039,
+    "Resultado médio": 0.002851126,
+    "Taxa de acerto": 0.639344262,
+    "Tempo posicionado": 0.130052021
+   },
+   "status_hoje": [
+    "EVITAR",
+    "Abaixo da MM200: fora do filtro de tendência."
+   ]
+  },
+  "pullback/QQQ": {
+   "equity_final": 1.127524015,
+   "n_trades": 77,
+   "plano": {
+    "R": 30.592272979,
+    "alvo1": 692.938397262,
+    "alvo2": 738.826806731,
+    "atr": 15.29613649,
+    "entrada": 647.049987793,
+    "quantidade": 1.634399642,
+    "risco_pct_preco": 0.047279613,
+    "risco_usd": 50.0,
+    "stop": 616.457714813,
+    "valor": 1057.538268286
+   },
+   "soma_retornos": 0.204146723,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.194531157,
+    "CAGR estratégia": 0.012176811,
+    "Dias médios": 3.558441558,
+    "Ganho médio": 0.011586614,
+    "Máx. queda buy & hold": -0.351187288,
+    "Máx. queda estratégia": -0.125637364,
+    "Operações": 77,
+    "Perda média": -0.014875793,
+    "Profit factor": 1.527823767,
+    "Resultado médio": 0.002651256,
+    "Taxa de acerto": 0.662337662,
+    "Tempo posicionado": 0.142056823
+   },
+   "status_hoje": [
+    "EM POSIÇÃO",
+    "Comprado há 3 dias, -6.9%; saída se fechar acima de 679.17."
+   ]
+  },
+  "pullback/SPY": {
+   "equity_final": 1.167680131,
+   "n_trades": 81,
+   "plano": {
+    "R": 21.185510443,
+    "alvo1": 764.778265664,
+    "alvo2": 796.556531328,
+    "atr": 10.592755221,
+    "entrada": 733.0,
+    "quantidade": 1.7053206,
+    "risco_pct_preco": 0.02890247,
+    "risco_usd": 36.128087385,
+    "stop": 711.814489557,
+    "valor": 1250.0
+   },
+   "soma_retornos": 0.16476215,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.146351662,
+    "CAGR estratégia": 0.015754988,
+    "Dias médios": 3.345679012,
+    "Ganho médio": 0.010274619,
+    "Máx. queda buy & hold": -0.337172803,
+    "Máx. queda estratégia": -0.145316243,
+    "Operações": 81,
+    "Perda média": -0.015397766,
+    "Profit factor": 1.411553583,
+    "Resultado médio": 0.002034101,
+    "Taxa de acerto": 0.679012346,
+    "Tempo posicionado": 0.140456182
+   },
+   "status_hoje": [
+    "PERTO DO GATILHO",
+    "Quase lá: falta pouco para os critérios de entrada."
+   ]
+  },
+  "rompimento/AAPL": {
+   "equity_final": 2.108516163,
+   "n_trades": 15,
+   "plano": {
+    "R": 17.738114216,
+    "alvo1": 370.777184751,
+    "alvo2": 397.384356075,
+    "atr": 8.869057108,
+    "entrada": 344.170013428,
+    "quantidade": 2.818788931,
+    "risco_pct_preco": 0.051538814,
+    "risco_usd": 50.0,
+    "stop": 326.431899212,
+    "valor": 970.142624075
+   },
+   "soma_retornos": 0.846970629,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.299085386,
+    "CAGR estratégia": 0.078127051,
+    "Dias médios": 54.0,
+    "Ganho médio": 0.130895471,
+    "Máx. queda buy & hold": -0.385158952,
+    "Máx. queda estratégia": -0.24913374,
+    "Operações": 15,
+    "Perda média": -0.02859902,
+    "Profit factor": 5.230767441,
+    "Resultado médio": 0.056464709,
+    "Taxa de acerto": 0.533333333,
+    "Tempo posicionado": 0.329331733
+   },
+   "status_hoje": [
+    "PERTO DO GATILHO",
+    "Quase lá: falta pouco para os critérios de entrada."
+   ]
+  },
+  "rompimento/GLD": {
+   "equity_final": 1.495546019,
+   "n_trades": 22,
+   "plano": {
+    "R": 13.268281163,
+    "alvo1": 395.392411979,
+    "alvo2": 415.294833724,
+    "atr": 6.634140582,
+    "entrada": 375.489990234,
+    "quantidade": 3.328983548,
+    "risco_pct_preco": 0.035335912,
+    "risco_usd": 44.169889705,
+    "stop": 362.221709071,
+    "valor": 1250.0
+   },
+   "soma_retornos": 0.467770243,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.12912404,
+    "CAGR estratégia": 0.04142229,
+    "Dias médios": 36.727272727,
+    "Ganho médio": 0.09344874,
+    "Máx. queda buy & hold": -0.282556961,
+    "Máx. queda estratégia": -0.169855582,
+    "Operações": 22,
+    "Perda média": -0.01998712,
+    "Profit factor": 2.671684584,
+    "Resultado médio": 0.021262284,
+    "Taxa de acerto": 0.363636364,
+    "Tempo posicionado": 0.331332533
+   },
+   "status_hoje": [
+    "EVITAR",
+    "Abaixo da MM200: fora do filtro de tendência."
+   ]
+  },
+  "rompimento/QQQ": {
+   "equity_final": 1.139292315,
+   "n_trades": 7,
+   "plano": {
+    "R": 30.592272979,
+    "alvo1": 692.938397262,
+    "alvo2": 738.826806731,
+    "atr": 15.29613649,
+    "entrada": 647.049987793,
+    "quantidade": 1.634399642,
+    "risco_pct_preco": 0.047279613,
+    "risco_usd": 50.0,
+    "stop": 616.457714813,
+    "valor": 1057.538268286
+   },
+   "soma_retornos": 0.135539269,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.194531157,
+    "CAGR estratégia": 0.013237161,
+    "Dias médios": 62.428571429,
+    "Ganho médio": 0.038413481,
+    "Máx. queda buy & hold": -0.351187288,
+    "Máx. queda estratégia": -0.112758359,
+    "Operações": 7,
+    "Perda média": -0.028264069,
+    "Profit factor": 3.397730972,
+    "Resultado médio": 0.019362753,
+    "Taxa de acerto": 0.714285714,
+    "Tempo posicionado": 0.177270908
+   },
+   "status_hoje": [
+    "EVITAR",
+    "Abaixo da MM200: fora do filtro de tendência."
+   ]
+  },
+  "rompimento/SPY": {
+   "equity_final": 0.955036048,
+   "n_trades": 10,
+   "plano": {
+    "R": 21.185510443,
+    "alvo1": 764.778265664,
+    "alvo2": 796.556531328,
+    "atr": 10.592755221,
+    "entrada": 733.0,
+    "quantidade": 1.7053206,
+    "risco_pct_preco": 0.02890247,
+    "risco_usd": 36.128087385,
+    "stop": 711.814489557,
+    "valor": 1250.0
+   },
+   "soma_retornos": -0.041246019,
+   "stats": {
+    "Anos": 9.916666667,
+    "CAGR buy & hold": 0.146351662,
+    "CAGR estratégia": -0.004628535,
+    "Dias médios": 30.4,
+    "Ganho médio": 0.046019259,
+    "Máx. queda buy & hold": -0.337172803,
+    "Máx. queda estratégia": -0.186273601,
+    "Operações": 10,
+    "Perda média": -0.016660567,
+    "Profit factor": 0.690541601,
+    "Resultado médio": -0.004124602,
+    "Taxa de acerto": 0.2,
+    "Tempo posicionado": 0.12565026
+   },
+   "status_hoje": [
+    "AGUARDAR",
+    "Tendência de alta, mas sem gatilho hoje."
+   ]
+  }
+ }
+}
