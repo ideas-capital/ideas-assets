@@ -46,5 +46,24 @@ Dependências novas: `fpdf2` e `matplotlib` (justificativa em MUDANCAS).
 Testes: `pytest` **172 verdes** (novos: fatores, score, relatório PDF/Excel com os mesmos valores do dict, status, regime). Smoke das 15 páginas × 2 temas sem exceção. Geração real do relatório exercitada em AppTest (PDF 79 KB, Excel 11 KB) e PDF inspecionado visualmente; teste ao vivo das 6 fontes: todas ok (Tesouro leva ~18 s). Visual: Configurações (dark) ok.
 Limitações novas: PENDENCIAS.md (PDF em Helvetica; chaves de IA permanecem na barra lateral; e-mail de alertas e os workflows `radar-diario`/`relatorio-mensal` ainda ausentes do repositório).
 
+## Sessão 6 — Testes finais, screenshots e entregáveis: **concluída**
+Feito: 56 screenshots (14 telas × desktop 1440 / mobile 390 × dark/light) em `screens/`, gerados com o tema do navegador (`colorScheme`); verificação automática de rolagem horizontal no mobile (nenhuma; o aviso do Scanner são as etiquetas do multiselect, que rolam dentro do campo); `tests/test_docs.py` (guia sem nomes antigos, menu = arquivos de `paginas/`, workflow válido, nenhum dado local/segredo versionado); `PROXIMOS-PASSOS.md`; PENDENCIAS revisada.
+Testes finais: `pytest` **177 verdes** (regressão numérica, contraste dos tokens, formatação, store, score, relatório = tela, hex em páginas, docs). Smoke `AppTest` das 15 páginas × 2 temas sem exceção (`scripts/smoke_paginas.py`).
+
+### Checklist manual
+| Item | Estado |
+|---|---|
+| Navegação (menu, 14 telas) | ok (AppTest + screenshots) |
+| Busca global | renderiza; clique-para-abrir testado só em AppTest |
+| Filtros (Scanner, Alertas, Comparar) | ok em AppTest; salvar/carregar filtro ok |
+| Exportação (CSV, Excel, PDF) | gerada e lida de volta em teste; clique de download em navegador não testado |
+| Estados vazio/erro | exibidos nas telas (verificados em screenshots e testes) |
+| Mobile 390 px | sem rolagem horizontal; toque real não testado |
+| Troca de tema pelo menu | **pendente no app publicado** |
+| Supabase/Telegram reais | **pendentes** (precisam de credenciais suas) |
+
+### Critério de pronto (PROMPT §13)
+Todas as páginas usam o Design System; dois temas completos; números iguais aos da versão anterior (golden verde). Pontos em aberto são externos ao código (credenciais, app publicado) e estão em `PROXIMOS-PASSOS.md`.
+
 ## Próxima ação exata
-**Sessão 6** (PROMPT §12/§13): (1) screenshots desktop 1440 px e mobile 390 px × dark e light das páginas principais em `docs/redesign/screens/` (Playwright; usar `colorScheme` do navegador para o tema, NÃO `?tema=`); conferir mobile do Ativo, Scanner, Laboratório, Carteiras, Zonas, Comparar, Alertas e Diário e corrigir o que quebrar (tabelas com scroll horizontal, gráfico com altura reduzida, colunas empilhadas). (2) Testes finais: regressão numérica verde, contraste, smoke AppTest, grep de hex em `paginas/`; adicionar teste que garante que `docs/GUIA.md` não cita nomes de telas antigos. (3) Checklist manual no PROGRESSO (navegação, busca, filtros, exportação, estados vazio/erro, mobile; troca de tema pelo menu segue pendente de verificação no app publicado). (4) Entregáveis finais em `docs/redesign/`: `PROXIMOS-PASSOS.md`, revisão de `MUDANCAS.md`/`PENDENCIAS.md`, `README.md`/`CLAUDE.md`/`GUIA.md` coerentes. (5) Abrir o PR para `main` SOMENTE se o usuário pedir explicitamente (a regra da plataforma proíbe criar PR sem pedido); caso contrário, deixar a branch pronta e informar.
+O redesign v5 está completo na branch `claude/confident-euler-7jpavc`. Falta apenas decisão sua: **abrir o PR para `main`** (não foi aberto: a plataforma proíbe sem pedido explícito) e depois fazer as verificações da seção 1 de `PROXIMOS-PASSOS.md` no app publicado.
