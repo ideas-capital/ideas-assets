@@ -134,7 +134,7 @@ div[data-testid="stPopover"] button {{border-radius:6px;}}
 .ds-empty.err {{border-color:var(--down);}} .ds-empty.err b {{color:var(--down);}}
 .ds-skel {{height:64px;border-radius:10px;background:var(--raised);}}
 .ds-chip {{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:12px;color:var(--text-muted);margin:0 6px 6px 0;}}
-.ds-obs {{color:var(--text);}} .ds-calc {{color:var(--primary-text);}} .ds-sim {{color:var(--warn);}} .ds-ia {{color:var(--indicator);}}
+.ds-real {{color:var(--up);border-color:var(--up);}} .ds-obs {{color:var(--text);}} .ds-calc {{color:var(--primary-text);}} .ds-sim {{color:var(--warn);}} .ds-ia {{color:var(--indicator);}}
 .pw-badge {{font-size:12px;}}
 .pw-warn {{color:var(--warn);}}
 @media (max-width:767px) {{

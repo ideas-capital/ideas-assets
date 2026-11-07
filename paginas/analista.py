@@ -73,10 +73,18 @@ with tab_est:
                  + "\n\nDADOS (JSON, referência " + data_ref + "):\n" + E.para_prompt(payload)}]
         res = settings.ask_ai(msgs, model=model_e, temperature=0.2)
         if res:
-            st.session_state.setdefault("analises_ia", []).insert(
-                0, {"ticker": tk_e, "quando": dt.datetime.now(ds.BRT).strftime("%d/%m/%Y %H:%M BRT"), "data_ref": data_ref,
-                    "modelo": res.model, "custo": res.cost_usd, "texto": res.text, "payload": payload})
-    hist = st.session_state.get("analises_ia", [])
+            agora = dt.datetime.now(ds.BRT)
+            try:
+                cache.store().put("analises_ia", f"{tk_e}-{agora:%Y%m%d%H%M%S}",
+                                  {"ticker": tk_e, "quando": agora.strftime("%d/%m/%Y %H:%M BRT"), "quando_iso": agora.isoformat(),
+                                   "data_ref": data_ref, "modelo": res.model, "custo": res.cost_usd, "texto": res.text, "payload": payload})
+            except Exception as e_:  # noqa: BLE001
+                st.warning(f"Análise gerada, mas não consegui salvar: {e_}")
+    try:
+        hist = sorted(cache.store().list("analises_ia"), key=lambda d: d.get("quando_iso", ""), reverse=True)
+    except Exception as e_:  # noqa: BLE001
+        hist = []
+        st.caption(f"Histórico de análises indisponível: {e_}")
     if hist:
         a_ = hist[0]
         v = E.validar(a_["texto"], a_["payload"])
@@ -101,11 +109,12 @@ with tab_est:
         with st.expander("Dados enviados à IA (JSON)"):
             st.json(a_["payload"], expanded=False)
         if len(hist) > 1:
-            with st.expander(f"Análises anteriores desta sessão ({len(hist) - 1})"):
+            with st.expander(f"Análises anteriores salvas ({len(hist) - 1})"):
                 for h in hist[1:]:
                     st.markdown(f"**{h['ticker']}** · {h['quando']} · {h['modelo']}")
                     st.markdown(h["texto"])
-        st.caption("As análises ficam só nesta sessão do navegador; o armazenamento persistente chega com o módulo de dados (Sessão 4).")
+        _bk = cache.store().backend
+        st.caption(f"Análises salvas no armazenamento **{_bk}**" + (" (arquivos locais: somem se o app reiniciar na nuvem)." if _bk == "local" else "."))
 
 # ---------------------------------------------------------------- Documento
 with tab_doc:

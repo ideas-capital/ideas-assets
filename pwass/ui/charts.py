@@ -90,13 +90,15 @@ def equity_vs(curves: dict[str, pd.Series], title: str, height: int = 300, log: 
     return fig
 
 
-def drawdown_fig(curves: dict[str, pd.Series], title: str = "Queda a partir do topo", height: int = 200) -> go.Figure:
+def drawdown_fig(curves: dict[str, pd.Series], title: str = "Queda a partir do topo", height: int = 200,
+                 paleta: bool = False) -> go.Figure:
+    """`paleta=True` usa as mesmas cores de `lines()` (comparação de ativos); senão, estratégia = cor 'up'."""
     t = theme.tokens()
     fig = _fig(height, title)
     for i, (name, s) in enumerate(curves.items()):
         dd = s / s.cummax() - 1
-        fig.add_scatter(x=dd.index, y=dd.values, name=name, line=dict(color=_serie_cor(i, len(curves), t), width=1.2),
-                        fill="tozeroy" if i == 0 else None, fillcolor="rgba(148,163,184,.14)")
+        fig.add_scatter(x=dd.index, y=dd.values, name=name, line=dict(color=COLORS[i % len(COLORS)] if paleta else _serie_cor(i, len(curves), t), width=1.2),
+                        fill="tozeroy" if i == 0 and not paleta else None, fillcolor="rgba(148,163,184,.14)")
     fig.update_yaxes(tickformat=".0%")
     return fig
 

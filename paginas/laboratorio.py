@@ -87,6 +87,21 @@ with tab_uma:
                                      "Preço saída": st.column_config.NumberColumn(format="%.2f")},
                       source="Backtest (simulado)", asof=f"{asof:%d/%m/%Y}")
 
+    # ---- operações reais neste ativo (diário), separadas do backtest
+    try:
+        reais = [o for o in cache.store().list("diario") if o["ticker"] == tk and o["estrategia"] == sid]
+    except Exception:  # noqa: BLE001
+        reais = []
+    st.markdown(f'#### Operações reais em {tk} {ds.origin_tag("real")}', unsafe_allow_html=True)
+    if reais:
+        ds.data_table(pd.DataFrame([{"Entrada": o["entrada_data"], "Preço entrada": o["entrada_preco"], "Saída": o["saida_data"] or "aberta",
+                                     "Preço saída": o.get("saida_preco"), "Resultado (bruto)": (o["saida_preco"] / o["entrada_preco"] - 1) if o.get("saida_preco") else None,
+                                     "Motivo": o.get("motivo") or ""} for o in sorted(reais, key=lambda o: o["entrada_data"], reverse=True)]),
+                      key="lab_reais", source="Diário (real, sem custos) — comparação completa em Diário de operações",
+                      column_config={"Resultado (bruto)": st.column_config.NumberColumn(format="percent")})
+    else:
+        ds.empty_state("Nenhuma operação real registrada neste ativo e regra", "Registre no Diário de operações para comparar com o backtest acima.")
+
 # ------------------------------------------------------------------ comparar
 with tab_cmp:
     with st.spinner("Comparando as 3 estratégias no universo..."):

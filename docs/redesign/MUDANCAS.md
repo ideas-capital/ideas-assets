@@ -25,3 +25,10 @@ Design System (`tokens.py`, `components.py`, `/componentes`), temas nativos no `
 **Novos módulos:** `engine/lab.py`, `engine/carteiras.py`, `engine/zonas.py`, `ai/estruturada.py`, gráficos em `ui/charts.py` (equity_vs, drawdown_fig, histogram, bars_by_year); `tvchart.render(zone=…)`.
 **Menu:** Estratégias = Laboratório de swing · Carteiras do Núcleo. **Dependências:** nenhuma.
 **Regras de estratégia/backtest:** não alteradas (teste de regressão segue verde; `lab.comparar` é testado contra `swing.pooled`).
+
+## Sessão 4
+**Persistência:** `pwass/store.py` (interface `get/put/list/delete`; backend local `data/*.local.json` e Supabase opcional por `SUPABASE_URL/KEY`; recusa campos sensíveis; `PWASS_DATA_DIR` troca a pasta) + `docs/redesign/supabase.sql` (5 tabelas, RLS, só `service_role`). Backend ativo é mostrado nas páginas que gravam.
+**Páginas novas:** **Alertas e watchlist** (listas múltiplas com sinais/variações; 7 tipos de alerta; disparados agora; ligar/desligar/apagar), **Comparar** (2–4 ativos, base 100, datas alinhadas, volatilidade/queda/correlação), **Diário de operações** (registro real × o que a regra mandava, resumo, rótulo "real").
+**Integrações:** ★ Favoritar e "Criar alerta" no Ativo; contagem real de alertas na topbar (some se não há alerta ativo); filtros salvos no Scanner; análises da IA gravadas no store; operações reais no Laboratório com rótulo próprio (`origin_tag("real")`).
+**Automação:** `.github/workflows/alertas.yml` + `scripts/verificar_alertas.py` + `pwass/data/notify.py` (Telegram opcional; não reenvia no mesmo dia).
+**Novos módulos puros:** `engine/alertas.py`, `engine/comparar.py`, `engine/diario.py`. **Menu:** + Comparar, Diário de operações, Alertas e watchlist. **Dependências:** nenhuma.

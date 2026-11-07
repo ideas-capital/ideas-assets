@@ -7,7 +7,7 @@ import sys
 from streamlit.testing.v1 import AppTest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-PAGINAS = ["terminal", "radar_ativos", "ativo", "scanner", "radar", "laboratorio", "carteiras", "analista", "guia", "_componentes"]
+PAGINAS = ["terminal", "radar_ativos", "ativo", "scanner", "radar", "laboratorio", "carteiras", "diario", "comparar", "alertas", "analista", "guia", "_componentes"]
 falhas = 0
 for tema in ("dark", "light"):
     for p in PAGINAS:

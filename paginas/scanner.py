@@ -54,26 +54,58 @@ if st.button(f"Rodar scanner ({len(tickers)} ações)", type="primary") or "scan
     full["Situação"], full["Profit factor"] = None, float("nan")
 
     st.markdown("#### Filtros")
+    FILTRO_KEYS = ["sc_grupos", "sc_setores", "sc_dia", "sc_vol", "sc_rsi", "sc_mm50", "sc_mm200", "sc_mcap", "sc_atr"]
+    try:
+        salvos = {d["id"]: d for d in cache.store().list("filtros_salvos")}
+    except Exception as e_:  # noqa: BLE001
+        salvos = {}
+        st.caption(f"Filtros salvos indisponíveis: {e_}")
+
+    def _carregar(id_):
+        for k_, v_ in salvos[id_]["valores"].items():
+            st.session_state[k_] = tuple(v_) if k_ in ("sc_dia", "sc_rsi") else v_
+
+    with st.expander(f"Filtros salvos ({len(salvos)})", icon=":material/bookmark:"):
+        sv1, sv2 = st.columns([3, 2], vertical_alignment="bottom")
+        nome_f = sv2.text_input("Nome para salvar o filtro atual", key="sc_nome")
+        if sv2.button("Salvar filtro atual", disabled=not nome_f.strip(), key="sc_salvar"):
+            cache.store().put("filtros_salvos", "sc-" + "".join(ch if ch.isalnum() else "-" for ch in nome_f.strip().lower()),
+                              {"nome": nome_f.strip(), "valores": {k_: (list(st.session_state[k_]) if isinstance(st.session_state.get(k_), tuple) else st.session_state.get(k_))
+                                                                    for k_ in FILTRO_KEYS if k_ in st.session_state}})
+            st.rerun()
+        if salvos:
+            esc_ = sv1.selectbox("Filtro salvo", list(salvos), format_func=lambda i: salvos[i]["nome"], key="sc_pick_salvo")
+            b1, b2 = sv1.columns(2)
+            b1.button("Carregar", key="sc_carregar", on_click=_carregar, args=(esc_,))
+            if b2.button("Apagar", key="sc_apagar"):
+                cache.store().delete("filtros_salvos", esc_)
+                st.rerun()
+        else:
+            sv1.caption("Nenhum filtro salvo ainda.")
     sw = cache.config("swing")
     f1, f2, f3 = st.columns(3)
-    flt = {"grupos": f1.multiselect("Grupo", sorted(full["Grupo"].unique())),
-           "setores": f2.multiselect("Setor", sorted(full["Setor"].dropna().unique()))}
+    g_opts, s_opts = sorted(full["Grupo"].unique()), sorted(full["Setor"].dropna().unique())
+    for k_, o_ in (("sc_grupos", g_opts), ("sc_setores", s_opts)):   # valor salvo que não existe mais nas opções é descartado
+        if k_ in st.session_state:
+            st.session_state[k_] = [v for v in st.session_state[k_] if v in o_]
+    flt = {"grupos": f1.multiselect("Grupo", g_opts, key="sc_grupos"),
+           "setores": f2.multiselect("Setor", s_opts, key="sc_setores")}
     if only_trend:
         flt["mm200"] = "acima"
-    dia = f3.slider("Variação no dia (%)", -15.0, 15.0, (-15.0, 15.0), 0.5)
+    dia = f3.slider("Variação no dia (%)", -15.0, 15.0, (-15.0, 15.0), 0.5, key="sc_dia")
     flt["dia"] = None if dia == (-15.0, 15.0) else (dia[0] / 100, dia[1] / 100)
     g1, g2, g3, g4 = st.columns(4)
-    vr = g1.number_input("Volume relativo mínimo (×)", 0.0, 10.0, 0.0, 0.5, help="Volume de hoje ÷ média das 20 sessões anteriores.")
+    vr = g1.number_input("Volume relativo mínimo (×)", 0.0, 10.0, 0.0, 0.5, help="Volume de hoje ÷ média das 20 sessões anteriores.", key="sc_vol")
     flt["vol_rel_min"] = vr or None
-    rsi = g2.slider("RSI 14", 0, 100, (0, 100))
+    rsi = g2.slider("RSI 14", 0, 100, (0, 100), key="sc_rsi")
     flt["rsi"] = None if rsi == (0, 100) else rsi
-    flt["mm50"] = {"Qualquer": None, "Acima": "acima", "Abaixo": "abaixo"}[g3.selectbox("Preço vs MM50", ["Qualquer", "Acima", "Abaixo"])]
+    flt["mm50"] = {"Qualquer": None, "Acima": "acima", "Abaixo": "abaixo"}[g3.selectbox("Preço vs MM50", ["Qualquer", "Acima", "Abaixo"], key="sc_mm50")]
     if not only_trend:
-        flt["mm200"] = {"Qualquer": None, "Acima": "acima", "Abaixo": "abaixo"}[g4.selectbox("Preço vs MM200", ["Qualquer", "Acima", "Abaixo"])]
+        flt["mm200"] = {"Qualquer": None, "Acima": "acima", "Abaixo": "abaixo"}[g4.selectbox("Preço vs MM200", ["Qualquer", "Acima", "Abaixo"], key="sc_mm200")]
     h1, h2, h3 = st.columns(3)
-    mc = h1.number_input("Valor de mercado mínimo (US$ bi)", 0.0, 5000.0, 0.0, 10.0)
+    mc = h1.number_input("Valor de mercado mínimo (US$ bi)", 0.0, 5000.0, 0.0, 10.0, key="sc_mcap")
     flt["mcap_min"] = mc * 1e9 if mc else None
-    atr = h2.number_input("ATR máximo (% do preço)", 0.0, 30.0, 0.0, 0.5, help="Volatilidade diária típica; menor = mais calmo.")
+    atr = h2.number_input("ATR máximo (% do preço)", 0.0, 30.0, 0.0, 0.5, help="Volatilidade diária típica; menor = mais calmo.", key="sc_atr")
     flt["atr_max"] = atr / 100 if atr else None
     use_sw = h3.toggle("Filtrar por sinal de estratégia (baixa 10 anos de candles; mais lento)", value=False)
     if use_sw:

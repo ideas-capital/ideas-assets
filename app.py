@@ -10,7 +10,7 @@ from pathlib import Path
 import streamlit as st
 
 from pwass.engine import mercado
-from pwass.ui import cache, components, settings, theme
+from pwass.ui import cache, components, dados, settings, theme
 
 st.set_page_config(page_title="IDEAS CAPITAL assets", page_icon=":material/candlestick_chart:",
                    layout="wide", initial_sidebar_state="auto")
@@ -26,13 +26,18 @@ MENU = {
     "Análise": [
         ("paginas/ativo.py", "Ativo", ":material/query_stats:"),
         ("paginas/scanner.py", "Scanner", ":material/manage_search:"),
+        ("paginas/comparar.py", "Comparar", ":material/compare_arrows:"),
         ("paginas/radar.py", "Zonas de entrada", ":material/my_location:"),
     ],
     "Estratégias": [
         ("paginas/laboratorio.py", "Laboratório de swing", ":material/science:"),
         ("paginas/carteiras.py", "Carteiras do Núcleo", ":material/account_balance:"),
+        ("paginas/diario.py", "Diário de operações", ":material/edit_note:"),
     ],
-    "Inteligência": [("paginas/analista.py", "Analista IA", ":material/smart_toy:")],
+    "Inteligência": [
+        ("paginas/analista.py", "Analista IA", ":material/smart_toy:"),
+        ("paginas/alertas.py", "Alertas e watchlist", ":material/notifications:"),
+    ],
     "Sistema": [("paginas/guia.py", "Guia e rotina", ":material/menu_book:")],
 }
 pages = {sec: [st.Page(f, title=t, icon=i, default=(f == "paginas/terminal.py")) for f, t, i in items]
@@ -94,6 +99,6 @@ def _data_asof() -> str | None:
         return None
 
 
-components.topbar(data_asof=_data_asof())
+components.topbar(data_asof=_data_asof(), n_alerts=dados.contagem_topbar())
 nav.run()
 theme.footer()

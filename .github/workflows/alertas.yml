@@ -1,0 +1,29 @@
+name: alertas
+# Verifica os alertas do app em dias úteis, após o fechamento (19h45 Brasília = 22h45 UTC).
+# Precisa de SUPABASE_URL e SUPABASE_KEY (secrets) para ler os alertas; sem eles, o job só informa e termina.
+# Telegram é opcional: TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID. Sem credenciais, os alertas aparecem só no app.
+on:
+  schedule:
+    - cron: "45 22 * * 1-5"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Verificar alertas
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then echo "Sem SUPABASE_URL: não há onde ler os alertas. Configure os secrets (docs/redesign/supabase.sql)."; exit 0; fi
+          python scripts/verificar_alertas.py

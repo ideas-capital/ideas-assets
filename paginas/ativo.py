@@ -8,7 +8,7 @@ import streamlit as st
 
 from pwass.ai import prompts
 from pwass.engine import ativo as A, health, indicators, radar, swing as S, valuation
-from pwass.ui import cache, charts, components as ds, context, settings, theme, tvchart
+from pwass.ui import cache, charts, components as ds, context, dados, settings, theme, tvchart
 from pwass.ui.theme import badge, card, num, pct
 
 ds.page_header("Ativo", "Preço, técnica, fundamentos, histórico das regras e uma segunda opinião da IA.")
@@ -41,6 +41,17 @@ if not b["dcf"]["moedas_iguais"]:
 
 sw = cache.config("swing")
 risk = sw["risco"]
+try:
+    _fav = dados.e_favorito(ticker)
+    _a1, _a2, _ = st.columns([1.3, 1.6, 6], vertical_alignment="center")
+    if _a1.button(":material/star: Favorito" if _fav else ":material/star_border: Favoritar", key="fav_btn",
+                  help="Adiciona/remove da watchlist 'Favoritos'."):
+        dados.alternar_favorito(ticker)
+        st.rerun()
+    with _a2.popover("Criar alerta", icon=":material/notifications:"):
+        dados.formulario_alerta(ticker, "ativo_al", sw)
+except Exception as _e:  # noqa: BLE001 — store indisponível não pode derrubar a página
+    st.caption(f"Favoritos e alertas indisponíveis agora: {_e}")
 try:
     ohl = cache.ohlcv((ticker,), "10y").get(ticker)
 except Exception:  # noqa: BLE001

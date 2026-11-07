@@ -165,11 +165,12 @@ def badge(status: str) -> str:
 
 
 ORIGEM = {"observado": ("ds-obs", "Observado (dado da fonte)"), "calculado": ("ds-calc", "Calculado pelo app"),
-          "simulado": ("ds-sim", "Simulado / backtest"), "ia": ("ds-ia", "Interpretação da IA")}
+          "simulado": ("ds-sim", "Simulado / backtest"), "ia": ("ds-ia", "Interpretação da IA"),
+          "real": ("ds-real", "Operação real (registrada por você)")}
 
 
 def origin_tag(kind: str) -> str:
-    """Rótulo de origem do número (§2.1-6): observado | calculado | simulado | ia."""
+    """Rótulo de origem do número (§2.1-6): observado | calculado | simulado | ia | real."""
     cls, label = ORIGEM[kind]
     return f'<span class="ds-tag {cls}" title="{label}">{label.split(" (")[0]}</span>'
 

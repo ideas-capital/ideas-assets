@@ -20,12 +20,14 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
 - `pwass/engine/`: funções puras e testadas. `swing.py` (3 estratégias + backtest), `strategies.py`
   (GEM/GTAA/carteiras), `backtest.py`, `factors.py` (QVM), `valuation.py`, `health.py` (semáforo), `radar.py`, `mercado.py` (pregão NYSE/B3, amplitude, novidades),
   `screener.py` (filtros do Scanner), `ativo.py` (classe do ativo, performance), `indicators.py` (MM, RSI, Bollinger, MACD, pivôs),
-  `lab.py` (comparação das estratégias), `carteiras.py` (pipeline das carteiras-modelo), `zonas.py` (plano de zona de entrada).
+  `lab.py` (comparação das estratégias), `carteiras.py` (pipeline das carteiras-modelo), `zonas.py` (plano de zona de entrada),
+  `alertas.py` (7 tipos de alerta), `comparar.py` (alinhamento/base 100/correlação), `diario.py` (real × regra).
 - `pwass/data/`: toda chamada de rede (Yahoo, FRED CSV, SEC, BCB SGS/Focus, Tesouro Transparente).
 - `pwass/ai/`: `openrouter.py` (cliente OpenAI-compatível; prefixos `gemini:`/`ollama:`), `prompts.py`,
   `committee.py` (3 agentes + juiz), `documents.py`, `estruturada.py` (análise IA em formato fixo + validação).
 - `pwass/ui/`: `theme.py` (tokens claro/escuro aplicados em runtime + CSS + tabelas HTML),
   `tvchart.py` (Lightweight Charts v5 — manter o logo de atribuição da TradingView), `cache.py`, `settings.py`.
+- `pwass/store.py`: dados do usuário (watchlists, alertas, diário, análises, filtros) — local ou Supabase; nunca gravar saldo/conta/seed.
 - `pwass/radar.py`: monta o Radar de ativos (usado pela página e por `scripts/gerar_radar.py`).
 - `config/*.yaml`: parâmetros editáveis — preferir mudar config a mudar código.
 
