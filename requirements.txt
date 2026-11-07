@@ -10,6 +10,8 @@ pyyaml>=6.0                          # arquivos de configuração
 pypdf>=5.0                           # extrair texto de PDFs no Analista IA
 openpyxl>=3.1                        # ler planilhas Excel enviadas
 quantstats>=0.0.86                   # relatório completo de performance
+fpdf2>=2.8                           # PDF do relatório (puro Python, sem pacote de sistema)
+matplotlib>=3.8                      # gráfico dentro do PDF (já vinha com o quantstats; agora explícito)
 
 # Desenvolvimento
 pytest>=8.3

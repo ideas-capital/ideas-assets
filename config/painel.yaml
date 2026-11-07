@@ -1,0 +1,14 @@
+# Faixa de mercado do Painel. Edite à vontade: ticker do Yahoo Finance, nome exibido, casas decimais.
+faixa:
+  - {ticker: "^GSPC",   nome: "S&P 500",     casas: 2}
+  - {ticker: "^NDX",    nome: "Nasdaq 100",  casas: 2}
+  - {ticker: "^DJI",    nome: "Dow Jones",   casas: 2}
+  - {ticker: "^BVSP",   nome: "Ibovespa",    casas: 0}
+  - {ticker: "BTC-USD", nome: "Bitcoin",     casas: 0}
+  - {ticker: "ETH-USD", nome: "Ethereum",    casas: 0}
+  - {ticker: "GC=F",    nome: "Ouro",        casas: 2}
+  - {ticker: "BRL=X",   nome: "USD/BRL",     casas: 4}
+  - {ticker: "^VIX",    nome: "VIX",         casas: 2}
+  - {ticker: "^TNX",    nome: "Juro 10a EUA (%)", casas: 2}
+# Classes de risco usadas no regime (≥5 acima da MM200 = favorável; 3–4 = misto; <3 = defensivo).
+classes_risco: [SPY, QQQ, IWM, VEU, EEM, VNQ, DBC]

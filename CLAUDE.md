@@ -18,12 +18,18 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
   botões de estratégia (`st.session_state["estrategia_swing"]`), tema claro/escuro.
 - `paginas/`: uma tela por arquivo. `terminal.py` é a inicial.
 - `pwass/engine/`: funções puras e testadas. `swing.py` (3 estratégias + backtest), `strategies.py`
-  (GEM/GTAA/carteiras), `backtest.py`, `factors.py` (QVM), `valuation.py`, `health.py` (semáforo), `radar.py`.
+  (GEM/GTAA/carteiras), `backtest.py`, `factors.py` (QVM), `valuation.py`, `health.py` (semáforo), `radar.py`, `mercado.py` (pregão NYSE/B3, amplitude, novidades),
+  `screener.py` (filtros do Scanner), `ativo.py` (classe do ativo, performance), `indicators.py` (MM, RSI, Bollinger, MACD, pivôs),
+  `lab.py` (comparação das estratégias), `carteiras.py` (pipeline das carteiras-modelo), `zonas.py` (plano de zona de entrada),
+  `alertas.py` (7 tipos de alerta), `comparar.py` (alinhamento/base 100/correlação), `diario.py` (real × regra),
+  `fatores.py` (a favor/contra), `score.py` (score validado fora da amostra — hoje reprovado, não exibir), `relatorio.py` (dados do relatório).
 - `pwass/data/`: toda chamada de rede (Yahoo, FRED CSV, SEC, BCB SGS/Focus, Tesouro Transparente).
 - `pwass/ai/`: `openrouter.py` (cliente OpenAI-compatível; prefixos `gemini:`/`ollama:`), `prompts.py`,
-  `committee.py` (3 agentes + juiz), `documents.py`.
+  `committee.py` (3 agentes + juiz), `documents.py`, `estruturada.py` (análise IA em formato fixo + validação).
 - `pwass/ui/`: `theme.py` (tokens claro/escuro aplicados em runtime + CSS + tabelas HTML),
   `tvchart.py` (Lightweight Charts v5 — manter o logo de atribuição da TradingView), `cache.py`, `settings.py`.
+- `pwass/export.py`: Excel e PDF do relatório (mesmo dict da tela). `pwass/data/status.py`: teste das fontes.
+- `pwass/store.py`: dados do usuário (watchlists, alertas, diário, análises, filtros) — local ou Supabase; nunca gravar saldo/conta/seed.
 - `pwass/radar.py`: monta o Radar de ativos (usado pela página e por `scripts/gerar_radar.py`).
 - `config/*.yaml`: parâmetros editáveis — preferir mudar config a mudar código.
 
@@ -43,5 +49,7 @@ Python 3.12 + Streamlit. Tudo em pt-BR: interface, comentários, docs. Custo ope
 5. Fundamentos oficiais via edgartools (XBRL da SEC).
 
 ## Redesign v5 (em andamento)
+Design System: `docs/redesign/DESIGN-SYSTEM.md`; tokens em `pwass/ui/tokens.py` (fonte única de cores; `.streamlit/config.toml` espelha). Componentes novos em `pwass/ui/components.py`.
 Instruções completas em `docs/redesign/PROMPT-REDESIGN-v5.md`; progresso em `docs/redesign/PROGRESSO.md`.
+Regressão numérica: `tests/test_regressao.py` compara swing/carteiras com `tests/fixtures/golden.json` (só regravar com `python -m tests.regressao` ao mudar regra de propósito).
 Trabalhar na branch `redesign-v5` e retomar sempre pela próxima ação registrada no PROGRESSO.

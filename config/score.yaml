@@ -1,0 +1,23 @@
+# Gerado por scripts/validar_score.py — NÃO editar à mão.
+# O app só mostra o score se validacao.mostrar for true.
+validacao:
+  mostrar: false
+  motivos:
+  - faixa alta não rendeu mais que a baixa no teste
+  data_dados: '2026-11-07'
+  corte_treino_teste: '2020-01-01'
+  n_treino: 772
+  n_teste: 2545
+  rho_teste: 0.0381
+  p_teste: 0.0225
+  cortes_faixas:
+  - 32.85
+  - 47.18
+pesos:
+  tendencia: 0.2263
+  momento: 0.519
+  volume: 0.0
+  volatilidade: 0.0
+  confirmacao: 0.2547
+  regime: 0.0
+  historico: 0.0

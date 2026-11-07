@@ -38,6 +38,16 @@ def history(ticker: str, period: str = "5y") -> pd.Series:
     return market.history(ticker, period)
 
 
+@st.cache_data(ttl=1800, show_spinner=False)
+def news(ticker: str) -> list[dict]:
+    return market.news(ticker)
+
+
+@st.cache_data(ttl=6 * 3600, show_spinner=False)
+def earnings_calendar(tickers: tuple[str, ...]) -> pd.DataFrame:
+    return market.earnings_calendar(list(tickers))
+
+
 @st.cache_data(ttl=6 * 3600, show_spinner=False)
 def fundamentals(ticker: str) -> dict:
     return market.fundamentals(ticker)
@@ -105,3 +115,33 @@ def ai_models() -> list[dict]:
         return openrouter.list_models()
     except Exception:  # noqa: BLE001 — sem internet, a lista fica vazia e usamos os presets
         return []
+
+
+# ------------------------------------------------------------------ dados do usuário (pwass/store.py)
+@st.cache_resource
+def store():
+    """Backend do store: Supabase se SUPABASE_URL/SUPABASE_KEY estiverem em env ou secrets; senão, arquivos locais."""
+    import os
+
+    from pwass import store as _store
+    env = dict(os.environ)
+    for k in ("SUPABASE_URL", "SUPABASE_KEY"):
+        try:
+            if k not in env and st.secrets.get(k):
+                env[k] = st.secrets[k]
+        except Exception:  # noqa: BLE001 — sem secrets.toml
+            pass
+    return _store.get_store(env=env)
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def alert_hits(alertas_json: str) -> list[dict]:
+    """Alertas disparados agora (cache de 15 min por conjunto de alertas). Entrada = JSON da lista de alertas."""
+    import json
+
+    from pwass.engine import alertas as _al
+    lista = [a for a in json.loads(alertas_json) if a.get("ativo", True)]
+    if not lista:
+        return []
+    dados = market.ohlcv(sorted({a["ticker"] for a in lista}), "5y")
+    return _al.avaliar_todos(lista, dados, config("swing"))

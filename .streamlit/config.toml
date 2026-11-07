@@ -1,0 +1,40 @@
+# Gerado a partir de pwass/ui/tokens.py (teste tests/test_tokens.py garante a sincronia).
+# O usuário alterna Light / Dark / Sistema pelo menu do app (⋮ → Settings).
+
+[theme]
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
+baseRadius = "10px"
+buttonRadius = "6px"
+showSidebarBorder = true
+
+[theme.dark]
+backgroundColor = "#0B1019"
+secondaryBackgroundColor = "#1B2638"
+textColor = "#F1F5F9"
+primaryColor = "#2563EB"
+borderColor = "#263247"
+linkColor = "#60A5FA"
+greenColor = "#10B981"
+redColor = "#F87171"
+orangeColor = "#F59E0B"
+violetColor = "#C084FC"
+
+[theme.dark.sidebar]
+backgroundColor = "#101827"
+secondaryBackgroundColor = "#151D2B"
+
+[theme.light]
+backgroundColor = "#F5F7FA"
+secondaryBackgroundColor = "#F1F5F9"
+textColor = "#172033"
+primaryColor = "#2563EB"
+borderColor = "#E2E8F0"
+linkColor = "#2563EB"
+greenColor = "#047857"
+redColor = "#CC2222"
+orangeColor = "#B45309"
+violetColor = "#9333EA"
+
+[theme.light.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#FFFFFF"

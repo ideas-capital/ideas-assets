@@ -12,7 +12,7 @@ import math
 import pandas as pd
 
 from pwass.engine import indicators
-from pwass.ui import theme
+from pwass.ui import theme, tokens
 
 try:
     from lightweight_charts_v5 import lightweight_charts_v5_component as _lwc
@@ -57,9 +57,10 @@ def fib_levels(df: pd.DataFrame, lookback: int = 120) -> dict[float, float]:
 
 
 def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = None,
-           plan: dict | None = None, trades: pd.DataFrame | None = None, bars: int = 180,
+           plan: dict | None = None, trades: pd.DataFrame | None = None, levels: dict | None = None, zone: tuple | None = None, bars: int = 180,
            height: int = 560, key: str = "tv") -> None:
-    show = {"mm": True, "bb": True, "vol": True, "rsi": True, "fib": False, "hl20": False, "plan": True, **(show or {})}
+    show = {"mm": True, "bb": True, "vol": True, "rsi": True, "fib": False, "hl20": False, "plan": True, "macd": False, "sr": False,
+            **(show or {})}
     t = theme.tokens()
     d = resample(df, tf)
     c = d["Close"]
@@ -69,8 +70,8 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
     candles = [{"time": _t(i), "open": float(r.Open), "high": float(r.High), "low": float(r.Low),
                 "close": float(r.Close)} for i, r in view.iterrows()]
     price_series = [{"type": "Candlestick", "data": candles,
-                     "options": {"upColor": t["up"], "downColor": t["down"], "borderVisible": False,
-                                 "wickUpColor": t["up"], "wickDownColor": t["down"]}}]
+                     "options": {"upColor": tokens.SERIES["candle_up"], "downColor": tokens.SERIES["candle_down"], "borderVisible": False,
+                                 "wickUpColor": tokens.SERIES["candle_up"], "wickDownColor": tokens.SERIES["candle_down"]}}]
     if trades is not None and not trades.empty and tf == "1D":
         mk = []
         start = idx[0]
@@ -80,12 +81,12 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
                        "text": f"{r['Retorno'] * 100:+.1f}%"})
         price_series[0]["markers"] = sorted(mk, key=lambda m: m["time"])
     if show["mm"]:
-        for n, col in ((20, t["accent2"]), (50, "#F59E0B"), (200, "#E040FB" if theme.mode() == "dark" else "#9C27B0")):
+        for n, col in ((20, tokens.SERIES["mm20"]), (50, tokens.SERIES["mm50"]), (200, tokens.SERIES["mm200"])):
             price_series.append(_lineseries(_line(indicators.sma(c, n).loc[idx]), col, 1, 0, f"MM{n}"))
     if show["bb"]:
         bb = indicators.bollinger(c).loc[idx]
         for col in ("upper", "lower"):
-            price_series.append(_lineseries(_line(bb[col]), "rgba(41,98,255,.55)", 1, 2))
+            price_series.append(_lineseries(_line(bb[col]), tokens.SERIES["bollinger"], 1, 2))
     if show["hl20"]:
         hh = d["High"].rolling(20).max().iloc[-1]
         ll = d["Low"].rolling(20).min().iloc[-1]
@@ -94,6 +95,14 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
     if show["fib"]:
         for f, v in fib_levels(d).items():
             price_series.append(_lineseries(_hline(idx, v, 120), "rgba(240,185,11,.75)", 1, 2, f"Fib {f:.3f}".rstrip("0").rstrip("."), True))
+    if show["sr"] and levels:  # suportes/resistências por pivôs confirmados (engine.indicators.support_resistance)
+        for i, v in enumerate(levels.get("suportes", [])):
+            price_series.append(_lineseries(_hline(idx, v, len(idx)), t["up"], 1, 2, f"Suporte {i + 1}", True))
+        for i, v in enumerate(levels.get("resistencias", [])):
+            price_series.append(_lineseries(_hline(idx, v, len(idx)), t["down"], 1, 2, f"Resist. {i + 1}", True))
+    if zone:  # faixa-alvo de compra: duas linhas (a biblioteca não desenha retângulos)
+        for lbl, v in (("Zona máx", max(zone)), ("Zona mín", min(zone))):
+            price_series.append(_lineseries(_hline(idx, v, len(idx)), t["accent"], 2, 0, lbl, True))
     if show["plan"] and plan:
         for lbl, key_, col, sty in (("Entrada", "entrada", t["accent"], 0), ("Stop", "stop", t["down"], 2),
                                     ("Alvo 1", "alvo1", t["up"], 2), ("Alvo 2", "alvo2", t["up"], 2)):
@@ -118,9 +127,17 @@ def render(df: pd.DataFrame, name: str, *, tf: str = "1D", show: dict | None = N
     if show["rsi"]:
         r = indicators.rsi(c).loc[idx]
         panes.append({"chart": chart_opts, "height": 110, "title": "RSI 14",
-                      "series": [_lineseries(_line(r), "#7E57C2", 1, 0, "RSI", True),
+                      "series": [_lineseries(_line(r), tokens.SERIES["rsi"], 1, 0, "RSI", True),
                                  _lineseries(_hline(idx, 70, len(idx)), t["muted"], 1, 2),
                                  _lineseries(_hline(idx, 30, len(idx)), t["muted"], 1, 2)]})
+    if show["macd"]:
+        mc = indicators.macd(c).loc[idx]
+        hist = [{"time": _t(i), "value": float(v), "color": (tokens.SERIES["candle_up"] if v >= 0 else tokens.SERIES["candle_down"]) + "88"}
+                for i, v in mc["hist"].dropna().items()]
+        panes.append({"chart": chart_opts, "height": 110, "title": "MACD 12·26·9",
+                      "series": [{"type": "Histogram", "data": hist, "options": {"priceLineVisible": False}},
+                                 _lineseries(_line(mc["macd"]), tokens.SERIES["macd"], 1, 0, "MACD", True),
+                                 _lineseries(_line(mc["signal"]), tokens.SERIES["macd_signal"], 1, 0, "Sinal", True)]})
     total = sum(p["height"] for p in panes)
     _lwc(name=f"{name}-{tf}", charts=panes, height=total, zoom_level=bars,
          key=f"{key}-{theme.mode()}-{tf}-{hash(frozenset(show.items()))}")
