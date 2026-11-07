@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from pwass.ai import prompts
-from pwass.engine import ativo as A, health, indicators, radar, swing as S, valuation
+from pwass.engine import ativo as A, fatores as FT, health, indicators, radar, swing as S, valuation
 from pwass.ui import cache, charts, components as ds, context, dados, settings, theme, tvchart
 from pwass.ui.theme import badge, card, num, pct
 
@@ -95,6 +95,13 @@ with t_ov:
                              "Histórico": S.quality(S.stats(bt_, S.periods_per_year(ohl.index)))})
             ds.data_table(pd.DataFrame(rows), key="ativo_sinais",
                           source="Calculado pelo app; histórico = backtest (simulado)", asof=f"{last_dt:%d/%m/%Y}")
+    if ohl is not None and len(ohl) >= 260:
+        with st.expander("Por que? Fatores a favor e contra (regra padrão)", icon=":material/rule:"):
+            _sid = sw.get("padrao")
+            _hq = next((r["Histórico"] for r in rows if r["Estratégia"] == sw["estrategias"][_sid]["curto"]), None)
+            _out = {r["Estratégia"]: r["Situação"] for r in rows if r["Estratégia"] != sw["estrategias"][_sid]["curto"]}
+            ds.fatores(FT.fatores(ohl, _sid, sw["estrategias"][_sid], historico=_hq, outras_estrategias=_out),
+                       f"{ticker} · {sw['estrategias'][_sid]['curto']}")
 
 # ------------------------------------------------------------------ Técnica
 with t_tec:

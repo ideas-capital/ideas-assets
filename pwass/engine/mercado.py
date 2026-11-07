@@ -125,3 +125,20 @@ def novidades(data: dict[str, pd.DataFrame], sinais: dict[str, pd.DataFrame], no
         elif ontem and not hoje:
             out["cruzou_mm200_abaixo"].append(t)
     return out
+
+
+def regime(precos: pd.DataFrame, classes: tuple[str, ...] | list[str], janela: int = 200) -> dict:
+    """Regime de mercado: quantas classes de risco estão acima da MM de `janela` dias.
+
+    ≥5 FAVORÁVEL · 3–4 MISTO · <3 DEFENSIVO (sobre o nº fixo de 7 classes do config). Classes sem preço são
+    ignoradas e contadas em `ausentes`. Retorna {rotulo, tipo ('ok'|'warn'|'bad'), acima, total, ausentes}.
+    """
+    acima, ausentes = 0, []
+    for t in classes:
+        if t not in precos or precos[t].dropna().size <= janela:
+            ausentes.append(t)
+            continue
+        s = precos[t].dropna()
+        acima += bool(s.iloc[-1] > indicators.sma(s, janela).iloc[-1])
+    rotulo, tipo = ("FAVORÁVEL", "ok") if acima >= 5 else ("MISTO", "warn") if acima >= 3 else ("DEFENSIVO", "bad")
+    return {"rotulo": rotulo, "tipo": tipo, "acima": acima, "total": len(classes), "ausentes": ausentes}

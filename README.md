@@ -23,13 +23,19 @@ na web só para você: **[docs/INSTALACAO.md](docs/INSTALACAO.md)**.
 
 | Tela | O que faz |
 |---|---|
-| **Mercado hoje** (Terminal) | Regime, alertas, cotações com mini-gráficos, sinal do dia da estratégia ativa (entrada, stop, alvos e tamanho da posição), gráfico estilo TradingView, métricas reais do backtest, radar de sinais e comitê de IA |
-| Radar de ativos | Semáforo de prudência: cripto, ações, ETFs, Treasuries, Tesouro Direto, Selic/CDI/IPCA e dólar |
-| Estratégias e carteiras | 8 carteiras-modelo trocáveis para o Núcleo, sinais GEM/GTAA, backtest em USD ou em reais vs CDI |
-| Scanner de ações | Nota Qualidade + Valor + Momento para ~100 empresas globais |
-| Raio-X do ativo | Fundamentos, Piotroski, DCF reverso, gráfico, auditoria e debate por IA |
-| Zonas de entrada | Suas faixas de preço com filtro anti-hype |
-| Analista IA | Lê PDFs, prints de gráfico, filings da SEC e audita posts de terceiros |
+| **Painel** | Faixa de mercado configurável, regime, amplitude, VIX, sinal do dia (entrada, stop, alvos, tamanho), oportunidades, o que mudou e resumo de IA |
+| Radar de mercado | Semáforo de prudência: cripto, ações, ETFs, Treasuries, Tesouro Direto, Selic/CDI/IPCA e dólar |
+| Ativo | Abas: visão geral, técnica (MACD, pivôs, Fibonacci), fundamentos por classe, histórico das regras, notícias/SEC e IA |
+| Scanner | Nota Qualidade + Valor + Momento para ~100 empresas globais, com 10 filtros e filtros salvos |
+| Comparar | 2 a 4 ativos em base 100, com datas alinhadas, volatilidade, queda e correlação |
+| Zonas de entrada | Suas faixas de preço com plano de risco e justificativa técnica |
+| Laboratório de swing | 3 regras fixas, backtest honesto, comparação e operações reais |
+| Carteiras do Núcleo | 8 carteiras-modelo, comparação lado a lado, sinais GEM/GTAA, backtest em USD ou reais vs CDI |
+| Diário de operações | O que você fez × o que a regra mandava |
+| Analista IA | Análise estruturada com formato fixo, PDFs, prints de gráfico, filings da SEC e auditoria de posts |
+| Alertas e watchlist | Listas e 7 tipos de alerta; aviso por Telegram via GitHub Actions (opcional) |
+| Relatórios | PDF e Excel do retrato de hoje |
+| Configurações e fontes | Parâmetros, status das fontes e armazenamento |
 | Guia e rotina | Como cada método funciona e a rotina de uso |
 
 **Fora do app:** `RADAR.md` e `site/index.html` são atualizados todo dia útil pelo GitHub Actions.

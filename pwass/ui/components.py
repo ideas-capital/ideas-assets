@@ -250,3 +250,18 @@ def insight_card(observed: str, interpretation: str = "", limitation: str = "", 
 def chips(items: list[str]) -> None:
     """Critérios aplicados (filtros) sempre visíveis."""
     st.markdown("".join(f'<span class="ds-chip">{esc(i)}</span>' for i in items), unsafe_allow_html=True)
+
+
+def fatores(fs: list[tuple[str, str]], titulo: str = "Por que este sinal?") -> None:
+    """Checklist de fatores a favor e contra (de `engine/fatores.py`; regras determinísticas, não IA)."""
+    fav = [t for t, l in fs if l == "favor"]
+    con = [t for t, l in fs if l == "contra"]
+    neu = [t for t, l in fs if l == "neutro"]
+    st.markdown(f"**{esc(titulo)}** {origin_tag('calculado')}", unsafe_allow_html=True)
+    c1, c2 = st.columns(2)
+    c1.markdown(f'<div class="ds-src">A favor ({len(fav)})</div>' + "".join(f'<div class="pw-up">＋ {esc(t)}</div>' for t in fav)
+                or "—", unsafe_allow_html=True)
+    c2.markdown(f'<div class="ds-src">Contra ({len(con)})</div>' + "".join(f'<div class="pw-down">− {esc(t)}</div>' for t in con),
+                unsafe_allow_html=True)
+    if neu:
+        st.markdown('<div class="ds-src">Neutros: ' + " · ".join(esc(t) for t in neu) + "</div>", unsafe_allow_html=True)

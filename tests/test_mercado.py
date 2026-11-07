@@ -63,3 +63,15 @@ def test_novidades_cruzamento_mm200_e_setup():
     sinal_velho = pd.DataFrame({"entry": [False, True, True]})
     n = m.novidades({"X": _df(np.r_[np.linspace(100, 150, 250), 80, 160.0])}, {"A": sinal_novo, "B": sinal_velho}, {})
     assert n["novos_setups"] == ["A"] and n["cruzou_mm200_acima"] == ["X"]
+
+
+def test_regime_por_classes_acima_da_mm200():
+    import numpy as np
+    import pandas as pd
+    idx = pd.bdate_range("2023-01-02", periods=300)
+    sobe, cai = np.linspace(50, 100, 300), np.linspace(100, 50, 300)
+    px = pd.DataFrame({f"S{i}": sobe for i in range(5)} | {"D0": cai, "D1": cai}, index=idx)
+    r = m.regime(px, ["S0", "S1", "S2", "S3", "S4", "D0", "D1"])
+    assert (r["rotulo"], r["tipo"], r["acima"], r["total"]) == ("FAVORÁVEL", "ok", 5, 7)
+    assert m.regime(px, ["S0", "S1", "S2", "D0", "D1", "X"])["rotulo"] == "MISTO"
+    assert m.regime(px, ["S0", "X", "Y"])["ausentes"] == ["X", "Y"] and m.regime(px, ["D0", "D1"])["rotulo"] == "DEFENSIVO"

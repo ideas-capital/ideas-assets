@@ -28,10 +28,11 @@ Todos aceitam `state` ∈ normal | loading | empty | error quando fazem sentido.
 | `ticker_strip(items)` | faixa de cotações |
 | `asset_header(...)` | ticker, nome, mercado, classe, preço, variação, horário |
 | `badge(status)` | COMPRA · PERTO · EM POSIÇÃO · AGUARDAR · EVITAR · SAIR (status inválido = erro) |
-| `origin_tag(kind)` | observado · calculado · simulado · ia |
+| `origin_tag(kind)` | observado · calculado · simulado · ia · real |
 | `data_table(df, column_config, on_select_open_asset, export_name)` | `st.dataframe` + CSV; seleção abre o Ativo |
 | `chart_container(...)` | título, controles, legenda e fonte |
 | `insight_card(observado, interpretação, limitação)` | padrão de insight |
+| `fatores(fs)` | checklist a favor/contra de um sinal (calculado) |
 | `chips`, `empty_state`, `error_state`, `loading_state`, `source_note` | auxiliares |
 
 Formatação (`theme.py`): `pct`, `num`, `money(x, cur="US$")`; ausente → `—`.

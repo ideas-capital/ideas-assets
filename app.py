@@ -38,7 +38,11 @@ MENU = {
         ("paginas/analista.py", "Analista IA", ":material/smart_toy:"),
         ("paginas/alertas.py", "Alertas e watchlist", ":material/notifications:"),
     ],
-    "Sistema": [("paginas/guia.py", "Guia e rotina", ":material/menu_book:")],
+    "Sistema": [
+        ("paginas/relatorios.py", "Relatórios", ":material/description:"),
+        ("paginas/configuracoes.py", "Configurações e fontes", ":material/settings:"),
+        ("paginas/guia.py", "Guia e rotina", ":material/menu_book:"),
+    ],
 }
 pages = {sec: [st.Page(f, title=t, icon=i, default=(f == "paginas/terminal.py")) for f, t, i in items]
          for sec, items in MENU.items()}

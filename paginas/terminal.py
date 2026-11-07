@@ -12,7 +12,7 @@ import streamlit as st
 
 from pwass.ai import committee
 from pwass.data import fred
-from pwass.engine import indicators, mercado, swing as S
+from pwass.engine import fatores as FT, indicators, mercado, swing as S
 from pwass.engine.radar import zone_status
 from pwass.ai import prompts
 from pwass.ui import cache, charts, components as ds, context, settings, theme, tvchart
@@ -33,8 +33,8 @@ with st.spinner("Carregando mercado e rodando as estratégias..."):
     strip = cache.prices(tuple(i["ticker"] for i in STRIP) + RISK_CLASSES, "2y")
     table, bts = S.scan(data, names, sid, strat, risk)
 
-up = sum(bool(strip[t].dropna().iloc[-1] > indicators.sma(strip[t].dropna(), 200).iloc[-1]) for t in RISK_CLASSES if t in strip)
-regime, rkind = ("FAVORÁVEL", "ok") if up >= 5 else ("MISTO", "warn") if up >= 3 else ("DEFENSIVO", "bad")
+_rg = mercado.regime(strip, RISK_CLASSES)
+up, regime, rkind = _rg["acima"], _rg["rotulo"], _rg["tipo"]
 
 # ------------------------------------------------------------------ alertas
 alerts = []
@@ -163,6 +163,18 @@ resultado médio {pct(stt['Resultado médio'], 2)} por operação · máx. queda
 <div style="margin-top:.4rem;font-size:.9rem">Perto do gatilho: <b>{', '.join(watch) or '—'}</b>.
 {('Saídas acionadas: <b>' + ', '.join(exits) + '</b>.') if exits else ''} Disciplina também é não operar.</div></div>""",
                     unsafe_allow_html=True)
+
+if st.session_state["rec_sinal"] and best is not None:
+    with st.expander("Por que este sinal? Fatores a favor e contra", icon=":material/rule:"):
+        _tk = best["Ticker"]
+        _outras = {}
+        for _k, _d in sw["estrategias"].items():
+            if _k != sid:
+                _b = S.backtest(data[_tk], _k, _d, risk["custo_por_lado"], risk["multiplo_atr_stop"])
+                _outras[_d["curto"]] = S.status_today(data[_tk], _k, _d, _b)[0]
+        ds.fatores(FT.fatores(data[_tk], sid, strat, regime=regime, historico=best["Histórico"], outras_estrategias=_outras),
+                   f"{_tk} · {strat['curto']}")
+        st.caption("O score numérico de qualidade do sinal NÃO é mostrado: não passou na validação fora da amostra (docs/redesign/SCORE.md).")
 
 # ------------------------------------------------------------------ gráfico + métricas
 if st.session_state["rec_grafico"] or st.session_state["rec_metricas"]:

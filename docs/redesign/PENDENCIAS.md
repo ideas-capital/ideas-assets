@@ -18,3 +18,7 @@
 | Casas decimais das tabelas nativas | `st.dataframe` formata números pelo locale do navegador (ponto decimal em navegador em inglês); o `format` printf do Streamlit não localiza. Cartões/KPI usam pt-BR. | Limitação do framework |
 | Diário: custos e impostos | Resultado real é bruto (sem custos/IOF/impostos); o backtest inclui 0,10%/lado. Dito na tela. Módulo fiscal fica no roadmap. | Documentado |
 | Supabase não testado contra servidor real | Backend testado com sessão HTTP simulada; o SQL (`supabase.sql`) não foi executado num projeto real. | Validar ao configurar |
+| Score do sinal | Reprovado na validação fora da amostra (ver SCORE.md): não é exibido. Reavaliar quando houver mais dados/regimes. | Decisão registrada |
+| PDF com fontes padrão | Usa Helvetica (latin-1): acentos do português ok; símbolos fora do latin-1 são trocados (ex.: "≥" → ">="). Fonte Inter embutida exigiria empacotar arquivos TTF. | Limitação aceita |
+| Chaves de IA fora da página Configurações | Ficam na barra lateral porque o Streamlit descarta o estado de um campo que não é desenhado na página atual; mover para a página perderia a chave ao navegar. A página mostra só o status. | Decisão registrada |
+| Teste "Tesouro" do status das fontes | Baixa ~178 mil linhas e leva ~18 s; os outros testes são rápidos. | Aceito |
